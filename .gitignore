@@ -234,3 +234,26 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+/App_Start
+/Controllers
+/fonts
+/patterns/buttons/flat
+/patterns/controls/textinput
+/patterns/patterns/table
+/patterns/patterns/popup
+/patterns/patterns/patterns/login
+/patterns/patterns/login
+/patterns/patterns/controls/textinput
+/patterns/patterns/buttons/flat
+/patterns/table
+/patterns/popup
+/Views
+/Properties
+/bundleconfig.json
+/Web.Release.config
+/Web.Debug.config
+/Web.config
+/patterns.csproj
+/packages.config
+/Global.asax.cs
+/Global.asax
