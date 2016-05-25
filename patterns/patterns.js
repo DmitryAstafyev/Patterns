@@ -3,12 +3,16 @@
 (function(){
     "use strict";
     //Modules declarations
-    var Patterns    = null,
-        Core        = null,
-        Events      = null,
-        Binds       = null;
+    var Patterns    = function () { },
+        Core        = function () { },
+        Events      = function () { },
+        Binds       = function () { },
+        Html        = function () { },
+        Focus       = function () { },
+        Move        = function () { },
+        Resize      = function () { },
+        Maximize    = function () { };
     //=== Patterns module ===
-    Patterns                = function () { };
     Patterns.prototype      = function () {
         var config      = null,
             settings    = null,
@@ -19,6 +23,7 @@
             result      = null,
             caller      = null,
             //Methods
+            layout      = null,
             privates    = null,
             controllers = null,
             storage     = null,
@@ -29,17 +34,19 @@
             callers     = null;
         //Config
         config      = {
-            values  : {
+            values      : {
                 USE_STORAGE_CSS : true,
                 USE_STORAGE_JS  : true,
                 USE_STORAGE_HTML: true,
+                PATTERN_NODE    : 'pattern',
             },
-            validator  : {
-                USE_STORAGE_CSS : function(value) { return typeof value === 'boolean' ? true : false;},
-                USE_STORAGE_JS  : function(value) { return typeof value === 'boolean' ? true : false;},
-                USE_STORAGE_HTML: function(value) { return typeof value === 'boolean' ? true : false;},
+            validator   : {
+                USE_STORAGE_CSS : function (value) { return typeof value === 'boolean' ? true : false;},
+                USE_STORAGE_JS  : function (value) { return typeof value === 'boolean' ? true : false;},
+                USE_STORAGE_HTML: function (value) { return typeof value === 'boolean' ? true : false;},
+                PATTERN_NODE    : function (value) { return typeof value === 'string' ? (value.length > 0 ? (value.replace(/\w/gi, '').length === 0 ? true : false) : false) : false; },
             },
-            setup   : function (_config) {
+            setup       : function (_config) {
                 if (_config !== null && typeof _config === 'object') {
                     _object(_config).forEach(function (key, value) {
                         if (config.values[key] !== void 0 && config.validator[key] !== void 0) {
@@ -48,10 +55,10 @@
                     });
                 }
             },
-            get     : function () {
+            get         : function () {
                 return config.values;
             },
-            debug   : function(){
+            debug       : function (){
                 config.values.USE_STORAGE_CSS   = false;
                 config.values.USE_STORAGE_JS    = false;
                 config.values.USE_STORAGE_HTML  = false;
@@ -166,7 +173,7 @@
                 FAIL_TO_PARSE_TEMPLATE  : '0003:FAIL_TO_PARSE_TEMPLATE',
                 FAIL_TO_LOAD_JS_RESOURCE: '0004:FAIL_TO_LOAD_JS_RESOURCE',
             },
-            pattern: {
+            pattern     : {
                 CANNOT_FIND_FIRST_TAG               : '1000:CANNOT_FIND_FIRST_TAG',
                 CANNOT_CREATE_WRAPPER               : '1001:CANNOT_CREATE_WRAPPER',
                 WRONG_PATTERN_WRAPPER               : '1002:WRONG_PATTERN_WRAPPER',
@@ -179,14 +186,17 @@
                 CANNOT_FIND_CONDITION_VALUE         : '1009:CANNOT_FIND_CONDITION_VALUE',
                 UNEXCEPTED_ERROR_CONDITION_PARSER   : '1010:UNEXCEPTED_ERROR_CONDITION_PARSER',
             },
-            instance : {
+            instance    : {
                 BAD_HOOK_FOR_CLONE      : '2000:BAD_HOOK_FOR_CLONE',
                 NO_URL_FOR_CLONE_HOOK   : '2001:NO_URL_FOR_CLONE_HOOK',
             },
-            caller : {
+            caller      : {
                 CANNOT_INIT_PATTERN     : '3000:CANNOT_INIT_PATTERN',
                 CANNOT_GET_CHILD_PATTERN: '3001:CANNOT_GET_CHILD_PATTERN',
                 CANNOT_GET_PATTERN      : '3002:CANNOT_GET_PATTERN',
+            },
+            layout      : {
+                BAD_ARRAY_OF_HOOKS      : '4000:BAD_ARRAY_OF_HOOKS',
             }
         };
         //Classes implementations
@@ -2305,21 +2315,41 @@
                 clone       = function (hooks) {
                     return privates.instance.clone(privates.hooks_map, hooks);
                 };
-                mount       = function (destination, replace) {
+                mount       = function (destination, before, after, replace) {
                     if (destination !== null) {
-                        destination.forEach.call(destination, function (parent) {
+                        Array.prototype.forEach.call(destination, function (parent) {
                             privates.nodes.forEach(function (node) {
                                 if (!replace) {
                                     parent.appendChild(node);
                                 } else {
                                     parent.parentNode.insertBefore(node, parent);
                                 }
-                                if (replace) {
-                                    parent.parentNode.removeChild(parent);
-                                }
+                            });
+                            if (replace) {
+                                parent.parentNode.removeChild(parent);
+                            }
+                        });
+                    } else if (before !== null && before.parentNode !== void 0 && before.parentNode !== null) {
+                        Array.prototype.forEach.call(before, function (parent) {
+                            privates.nodes.forEach(function (node) {
+                                before.parentNode.insertBefore(node, before);
                             });
                         });
+                    } else if (after !== null && after.parentNode !== void 0 && after.parentNode !== null) {
+                        Array.prototype.forEach.call(after, function (parent) {
+                            var _before = after.nextSibling !== void 0 ? after.nextSibling : null;
+                            if (_before !== null) {
+                                privates.nodes.forEach(function (node) {
+                                    _before.parentNode.insertBefore(node, _before);
+                                });
+                            } else {
+                                privates.nodes.forEach(function (node) {
+                                    after.parentNode.appendChild(node);
+                                });
+                            }
+                        });
                     }
+                    flex.events.core.fire(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, privates.nodes);
                 };
                 returning   = {
                     nodes           : function () { return privates.nodes;          },
@@ -2476,7 +2506,7 @@
                                 if (privates.pattern !== null) {
                                     privates.pattern    = privates.pattern.build(privates.hooks, privates.resources, privates.conditions);
                                     if (privates.pattern instanceof settings.classes.RESULT) {
-                                        privates.pattern.mount(privates.node, privates.replace);
+                                        privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
                                         if (privates.callbacks.success !== null) {
                                             privates.pattern.handle()(privates.callbacks.success, privates.resources);
                                         }
@@ -2538,6 +2568,8 @@
                 /// <returns type="boolean">true - success; false - fail</returns>
                 if (flex.oop.objects.validate(parameters, [ { name: 'url',                  type: 'string'                                  },
                                                             { name: 'node',                 type: ['node', 'string'],   value: null         },
+                                                            { name: 'before',               type: ['node', 'string'],   value: null         },
+                                                            { name: 'after',                type: ['node', 'string'],   value: null         },
                                                             { name: 'id',                   type: 'string',             value: flex.unique()},
                                                             { name: 'replace',              type: 'boolean',            value: false        },
                                                             { name: 'hooks',                type: ['object', 'array'],  value: null         },
@@ -2557,7 +2589,9 @@
                         privates        : {
                             //From parameters
                             id                  : parameters.id,
-                            node                : parameters.node !== null ? (typeof parameters.node === 'string' ? _nodes(parameters.node).target : [parameters.node]) : null,
+                            node                : parameters.node   !== null ? (typeof parameters.node      === 'string' ? _nodes(parameters.node   ).target : [parameters.node]     ) : null,
+                            before              : parameters.before !== null ? (typeof parameters.before    === 'string' ? _nodes(parameters.before ).target : [parameters.before]   ) : null,
+                            after               : parameters.after  !== null ? (typeof parameters.after     === 'string' ? _nodes(parameters.after  ).target : [parameters.after]    ) : null,
                             replace             : parameters.replace,
                             hooks               : parameters.hooks,
                             data                : parameters.data,
@@ -2576,6 +2610,123 @@
             },
         };
         //END: caller class ===============================================
+        layout      = {
+            init    : function (is_auto){
+                function isValid(pattern) {
+                    var nodeName = pattern.parentNode.nodeName.toLowerCase();
+                    if (nodeName !== config.values.PATTERN_NODE) {
+                        if (nodeName !== 'body'){
+                            return isValid(pattern.parentNode);
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                };
+                var patterns    = _nodes(config.values.PATTERN_NODE).target,
+                    is_auto     = typeof is_auto === 'boolean' ? is_auto : false;
+                if (patterns !== null && patterns instanceof NodeList && patterns.length > 0) {
+                    Array.prototype.forEach.call(patterns, function (pattern) {
+                        if (isValid(pattern)) {
+                            if ((!pattern.hasAttribute('success') && !pattern.hasAttribute('error')) || !is_auto) {
+                                layout.caller(pattern);
+                            }
+                        }
+                    });
+                }
+            },
+            caller  : function (pattern, is_child) {
+                function getIndex(source, hook) {
+                    var index = -1;
+                    try{
+                        source.forEach(function(hooks, _index){
+                            if (hooks[hook] === void 0){
+                                index = _index;
+                                throw 'found';
+                            }
+                        });
+                    }catch(e){}
+                    return index;
+                };
+                function getCallback(pattern, type) {
+                    var callback = pattern.getAttribute(type),
+                        parts       = null;
+                    if (typeof callback === 'string' && callback !== '') {
+                        parts       = callback.split('.');
+                        callback    = window;
+                        parts.forEach(function (part) {
+                            if (callback !== null && callback[part] !== void 0) {
+                                callback = callback[part];
+                            } else {
+                                callback = null;
+                            }
+                        });
+                        return callback;
+                    } else {
+                        return null;
+                    }
+                };
+                var _caller     = null,
+                    is_child    = is_child !== void 0 ? is_child : false,
+                    url         = null;
+                if (pattern.hasAttribute('src')) {
+                    _caller = {
+                        url     : pattern.getAttribute('src'),
+                        hooks   : {}
+                    };
+                    Array.prototype.forEach.call(pattern.children, function (child) {
+                        var index   = 0,
+                            hook    = child.nodeName.toLowerCase();
+                        if (_caller.hooks[hook] !== void 0 && !(_caller.hooks instanceof Array)) {
+                            _caller.hooks = [_caller.hooks];
+                        }
+                        if (_caller.hooks instanceof Array) {
+                            index = getIndex(_caller.hooks, hook);
+                            if (index === -1) {
+                                _caller.hooks.push({});
+                                index = _caller.hooks.length - 1;
+                            }
+                            if (!child.hasAttribute('src')) {
+                                _caller.hooks[index][hook] = child.innerHTML;
+                            } else {
+                                _caller.hooks[index][hook] = layout.caller(child, true);
+                            }
+                        } else {
+                            if (!child.hasAttribute('src')) {
+                                _caller.hooks[hook] = child.innerHTML;
+                            } else {
+                                _caller.hooks[hook] = layout.caller(child, true);
+                            }
+                        }
+                    });
+                    if (typeof _caller.hooks === 'object' && Object.keys(_caller.hooks).length === 0) {
+                        delete _caller.hooks;
+                    }
+                    if (!is_child) {
+                        _caller.node        = pattern;
+                        _caller.replace     = true;
+                        _caller.callbacks   = {
+                            success : getCallback(pattern, 'success'),
+                            error   : getCallback(pattern, 'error'),
+                        };
+                        _caller = caller.instance(_caller).render();
+                    } else {
+                        _caller = caller.instance(_caller);
+                    }
+                }
+                return _caller;
+            },
+            attach  : function () {
+                if (document.readyState !== 'complete') {
+                    flex.events.DOM.add(window, 'load', function () {
+                        layout.init(true);
+                    });
+                } else {
+                    layout.init(true);
+                }
+            }
+        };
         controllers = {
             references  : {
                 assign          : function (url, pattern_url) {
@@ -2846,12 +2997,15 @@
                 }
             },
             setup       : config.setup,
-            debug       : config.debug
+            debug       : config.debug,
+            layout      : layout.init
         };
         //Global callers
         callers.init();
         window['_controller'] = privates.controller.attach;
         window['_conditions'] = privates.conditions.attach;
+        //Run layout parser
+        layout.attach();
         //Public part
         return {
             preload : privates.preload,
@@ -2862,11 +3016,11 @@
                 }
             },
             setup   : privates.setup,
-            debug   : privates.debug
+            debug   : privates.debug,
+            layout  : privates.layout
         };
     };
     //=== Events module ===
-    Events                  = function () { };
     Events.prototype        = function () {
         var instance    = null,
             DOM         = null,
@@ -3600,7 +3754,6 @@
         };
     };
     //=== Binds module ===
-    Binds                   = function () { };
     Binds.prototype         = function () {
         var objects         = null,
             attrs           = null,
@@ -4344,8 +4497,1961 @@
         return {
         };
     };
+    //=== Focus module ===
+    Focus.prototype         = function () {
+        /* Description
+        * data-flex-ui-window-focus
+        * data-flex-ui-window-move-hook
+        * */
+        var //Variables
+            privates        = null,
+            global          = null,
+            processing      = null,
+            settings        = null,
+            patterns        = null;
+        settings = {
+            CONTAINER           : 'data-flex-ui-window-focus',
+            INITED              : 'data-flex-window-focus-inited',
+            GLOBAL_GROUP        : 'flex-window-focus-global-group',
+            GLOBAL_EVENT_FLAG   : 'flex-window-focus-global-event',
+            GLOBAL_CURRENT      : 'flex-window-focus-global-current',
+            GLOBAL_EVENT_ID     : 'flex-window-focus-global-event-id',
+            FOCUSED_ZINDEX      : 1000
+        };
+        function init(id) {
+            var id          = id || null,
+                containers  = _nodes('*[' + settings.CONTAINER + (id !== null ? '="' + id + '"' : '') + ']:not([' + settings.INITED + '])').target;
+            if (containers !== null) {
+                Array.prototype.forEach.call(
+                    containers,
+                    function (container) {
+                        var id = container.getAttribute(settings.CONTAINER);
+                        if (id === '' || id === null) {
+                            container.setAttribute(settings.CONTAINER, flex.unique());
+                        }
+                        container.setAttribute(settings.INITED, true);
+                    }
+                );
+            }
+        };
+        global      = {
+            attach: function () {
+                var isAttached  = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG);
+                if (isAttached !== true) {
+                    flex.overhead.globaly.set(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG, true);
+                    _node(window).events().add(
+                        'click',
+                        function (event) {
+                            processing.onClick(event);
+                            return true;
+                        },
+                        settings.GLOBAL_EVENT_ID
+                    );
+                }
+            },
+        };
+        processing  = {
+            getContainer    : function(node){
+                var id          = null,
+                    container   = null;
+                if (typeof node.getAttribute === 'function') {
+                    id = node.getAttribute(settings.CONTAINER);
+                    if (id !== '' && id !== null) {
+                        return {
+                            container   : node,
+                            id          : id
+                        };
+                    }
+                }
+                container = _node(node).html().find().parentByAttr({ name: settings.CONTAINER, value: null });
+                if (container !== null) {
+                    return {
+                        container   : container,
+                        id          : container.getAttribute(settings.CONTAINER)
+                    };
+                }
+                return null;
+            },
+            history         : {
+                is      : function (id) {
+                    return (flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT) !== id ? false : true);
+                },
+                set     : function (id) {
+                    flex.overhead.globaly.set(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT, id);
+                },
+                get     : function () {
+                    return flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT);
+                },
+                del     : function () {
+                    flex.overhead.globaly.del(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT);
+                }
+            },
+            onClick         : function (event) {
+                var container   = processing.getContainer(event.flex.target),
+                    previous    = processing.history.get();
+                if (previous !== null) {
+                    processing.focus.unset(previous);
+                }
+                if (container !== null) {
+                    if (processing.history.is(container.id) === false) {
+                        processing.focus.set(container.id);
+                    }
+                }
+            },
+            focus           : {
+                zIndex  : function(id, value){
+                    var container   = _node('*[' + settings.CONTAINER + '="' + id + '"' + ']').target;
+                    if (container !== null) {
+                        container.style.zIndex = value;
+                    }
+                },
+                set     : function(id){
+                    processing.focus.zIndex(id, settings.FOCUSED_ZINDEX);
+                    processing.history.set(id);
+                },
+                unset   : function(id){
+                    processing.focus.zIndex(id, '');
+                    processing.history.del(id);
+                },
+            },
+        };
+        patterns    = {
+            attach: function () {
+                flex.events.core.listen(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, function (nodes) {
+                    var context = nodes.length !== void 0 ? (nodes.length > 0 ? nodes[0].parentNode : null) : null;
+                    if (context !== null) {
+                        if (_node('*[' + settings.CONTAINER + ']:not([' + settings.INITED + '])', false, context).target !== null) {
+                            init();
+                        }
+                    }
+                });
+            }
+        };
+        privates    = {
+            init : init
+        };
+        global.attach();
+        patterns.attach();
+        //Init modules
+        if (flex.libraries !== void 0) {
+            if (flex.libraries.events !== void 0 && flex.libraries.html !== void 0) {
+                flex.libraries.events.create();
+                flex.libraries.html.create();
+            }
+        }
+        return {
+            init : privates.init
+        };
+    };
+    //=== Min / max window module ===
+    Maximize.prototype      = function () {
+        /* Description
+        * data-flex-ui-window-maximize
+        * data-flex-window-maximize-hook
+        * */
+        var //Variables
+            privates        = null,
+            global          = null,
+            patterns        = null,
+            processing      = null,
+            settings        = null;
+        settings = {
+            CONTAINER           : 'data-flex-ui-window-maximize',
+            HOOK                : 'data-flex-window-maximize-hook',
+            INITED              : 'data-flex-window-maximize-inited',
+            STATE               : 'data-flex-window-is-maximized',
+            STORAGE             : 'flex-window-maximize-storage',
+        };
+        function init(id) {
+            var id          = id || null,
+                containers  = _nodes('*[' + settings.CONTAINER + (id !== null ? '="' + id + '"' : '') + ']:not([' + settings.INITED + '])').target;
+            if (containers !== null) {
+                Array.prototype.forEach.call(
+                    containers,
+                    function (container) {
+                        var id      = container.getAttribute(settings.CONTAINER),
+                            hooks   = null;
+                        if (id !== '' && id !== null) {
+                            hooks = _nodes('*[' + settings.HOOK + '="' + id + '"]').target;
+                            if (hooks !== null) {
+                                processing.attach(container, hooks, id);
+                            }
+                        }
+                        container.setAttribute(settings.INITED, true    );
+                        container.setAttribute(settings.STATE, 'false'  );
+                        flex.overhead.objecty.set(container, settings.STORAGE, { maximazed: false }, true);
+                    }
+                );
+            }
+        };
+        processing = {
+            attach  : function (container, hooks, id) {
+                Array.prototype.forEach.call(
+                    hooks,
+                    function (hook, index) {
+                        _node(hook).events().add(
+                            'click',
+                            function (event) {
+                                processing.onClick(event, container, id);
+                                return true;
+                            },
+                            id + '_' + index
+                        );
+                    }
+                );
+            },
+            onClick : function (event, container, id) {
+                var storage = flex.overhead.objecty.get(container, settings.STORAGE, false);
+                if (storage !== null) {
+                    if (storage.maximazed === false) {
+                        processing.actions.maximaze(container, storage, id);
+                    } else {
+                        processing.actions.restore(container, storage, id);
+                    }
+                    //Run external events in background
+                    setTimeout(
+                        function () {
+                            flex.events.core.fire(
+                                flex.registry.events.ui.window.maximize.GROUP,
+                                flex.registry.events.ui.window.maximize.CHANGE,
+                                { container: container, id: id }
+                            );
+                        },
+                        10
+                    );
+                }
+            },
+            actions: {
+                maximaze: function (container, storage, id) {
+                    storage.maximazed   = true;
+                    storage.size        = {
+                        position: container.style.position  !== '' ? container.style.position   : false,
+                        width   : container.style.width     !== '' ? container.style.width      : false,
+                        height  : container.style.height    !== '' ? container.style.height     : false,
+                        left    : container.style.left      !== '' ? container.style.left       : false,
+                        top     : container.style.top       !== '' ? container.style.top        : false,
+                    };
+                    container.style.position    = 'fixed';
+                    container.style.width       = '100%';
+                    container.style.height      = '100%';
+                    container.style.left        = '0px';
+                    container.style.top         = '0px';
+                    container.setAttribute(settings.STATE, 'true');
+                    //Run external events in background
+                    setTimeout(
+                        function () {
+                            flex.events.core.fire(
+                                flex.registry.events.ui.window.maximize.GROUP,
+                                flex.registry.events.ui.window.maximize.MAXIMIZED,
+                                { container: container, id: id }
+                            );
+                        },
+                        10
+                    );
+                },
+                restore : function (container, storage, id) {
+                    storage.maximazed           = false;
+                    container.style.position    = storage.size.position !== false ? storage.size.position   : '';
+                    container.style.width       = storage.size.width    !== false ? storage.size.width      : '';
+                    container.style.height      = storage.size.height   !== false ? storage.size.height     : '';
+                    container.style.left        = storage.size.left     !== false ? storage.size.left       : '';
+                    container.style.top         = storage.size.top      !== false ? storage.size.top        : '';
+                    container.setAttribute(settings.STATE, 'false');
+                    //Run external events in background
+                    setTimeout(
+                        function () {
+                            flex.events.core.fire(
+                                flex.registry.events.ui.window.maximize.GROUP,
+                                flex.registry.events.ui.window.maximize.RESTORED,
+                                { container: container, id: id }
+                            );
+                        },
+                        10
+                    );
+                },
+                byID : {
+                    findByID: function (id) {
+                        var id          = id || null,
+                            containers  = null,
+                            result      = [];
+                        if (id !== null) {
+                            containers = _nodes('*[' + settings.CONTAINER + (id !== null ? '="' + id + '"' : '') + ']').target;
+                            if (containers !== null) {
+                                if (containers.length > 0) {
+                                    Array.prototype.forEach.call(containers, function (container) {
+                                        var storage = flex.overhead.objecty.get(container, settings.STORAGE, false);
+                                        if (storage !== null) {
+                                            result.push({
+                                                container   : container,
+                                                storage     : storage
+                                            });
+                                        }
+                                    });
+                                    return result.length > 0 ? result : null;
+                                }
+                            }
+                        }
+                        return null;
+                    },
+                    maximaze: function (id) {
+                        var data = processing.actions.byID.findByID(id);
+                        if (data !== null) {
+                            data.forEach(function (data) {
+                                processing.actions.maximaze(data.container, data.storage, id);
+                            });
+                        }
+                    },
+                    restore : function (id) {
+                        var data = processing.actions.byID.findByID(id);
+                        if (data !== null) {
+                            data.forEach(function (data) {
+                                processing.actions.restore(data.container, data.storage, id);
+                            });
+                        }
+                    },
+                }
+            }
+        };
+        patterns = {
+            attach: function () {
+                flex.events.core.listen(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, function (nodes) {
+                    var context = nodes.length !== void 0 ? (nodes.length > 0 ? nodes[0].parentNode : null) : null;
+                    if (context !== null) {
+                        if (_node('*[' + settings.CONTAINER + ']:not([' + settings.INITED + '])', false, context).target !== null) {
+                            init();
+                        }
+                    }
+                });
+            }
+        };
+        //Init modules
+        if (flex.libraries !== void 0) {
+            if (flex.libraries.events !== void 0) {
+                flex.libraries.events.create();
+            }
+        }
+        patterns.attach();
+        privates = {
+            init    : init,
+            maximaze: processing.actions.byID.maximaze,
+            restore : processing.actions.byID.restore,
+        };
+        return {
+            init        : privates.init,
+            maximaze    : privates.maximaze,
+            restore     : privates.restore,
+        };
+    };
+    //=== Move window module ===
+    Move.prototype          = function () {
+        /* Description
+        * data-flex-ui-window-move-container="id"
+        * data-flex-ui-window-move-hook="id"
+        * */
+        var //Variables
+            privates        = null,
+            render          = null,
+            coreEvents      = null,
+            patterns        = null,
+            settings        = null;
+        settings = {
+            CONTAINER           : 'data-flex-ui-window-move-container',
+            HOOK                : 'data-flex-ui-window-move-hook',
+            INITED              : 'data-flex-window-move-inited',
+            GLOBAL_GROUP        : 'flex-window-move',
+            GLOBAL_EVENT_FLAG   : 'flex-window-move-global-event',
+            GLOBAL_CURRENT      : 'flex-window-move-global-current',
+            GLOBAL_EVENT_ID     : 'flex-window-move-global-event-id',
+            STATE_STORAGE       : 'flex-window-move-instance-state',
+        };
+        function init(id) {
+            var id          = id || null,
+                containers  = _nodes('*[' + settings.CONTAINER + (id !== null ? '="' + id + '"' : '') + ']:not([' + settings.INITED + '])').target;
+            if (containers !== null) {
+                Array.prototype.forEach.call(
+                    containers,
+                    function (container) {
+                        var id      = container.getAttribute(settings.CONTAINER),
+                            hooks   = null;
+                        if (id !== '' && id !== null) {
+                            hooks = _nodes('*[' + settings.HOOK + '="' + id + '"]').target;
+                            if (hooks !== null) {
+                                render.attach(container, hooks, id);
+                                coreEvents.attach(container, id);
+                            }
+                        }
+                        container.setAttribute(settings.INITED, true);
+                    }
+                );
+            }
+        };
+        render      = {
+            attach  : function (container, hooks, id) {
+                Array.prototype.forEach.call(
+                    hooks,
+                    function (hook) {
+                        _node(hook).events().add(
+                            'mousedown',
+                            function (event) {
+                                render.start(event, container, hook, id);
+                            },
+                            id
+                        );
+                    }
+                );
+            },
+            start   : function (event, container, hook, id) {
+                function getPosition(node) {
+                    if (node.currentStyle) {
+                        if (node.currentStyle.position) {
+                            return node.currentStyle.position;
+                        }
+                    }
+                    if (window.getComputedStyle) {
+                        return window.getComputedStyle(node).position;
+                    }
+                    return null;
+                }
+                var pos         = null,
+                    scrl        = null,
+                    isFixed     = null;
+                if (flex.overhead.objecty.get(container, settings.STATE_STORAGE, false, false) === false) {
+                    pos         = _node(container).html().position().byPage();
+                    scrl        = _node(container.parentNode).html().scroll().position();
+                    isFixed     = getPosition(container) !== 'fixed' ? false : true;
+                    flex.overhead.globaly.set(
+                        settings.GLOBAL_GROUP,
+                        settings.GLOBAL_CURRENT,
+                        {
+                            clientX     : event.flex.clientX,
+                            clientY     : event.flex.clientY,
+                            offsetX     : event.flex.offsetX,
+                            offsetY     : event.flex.offsetY,
+                            pageX       : event.flex.pageX,
+                            pageY       : event.flex.pageY,
+                            hook        : hook,
+                            container   : container,
+                            id          : id,
+                            oldX        : event.flex.pageX,
+                            oldY        : event.flex.pageY,
+                            posX        : pos.left + (isFixed === false ? scrl.left() : 0),
+                            posY        : pos.top + (isFixed === false ? scrl.top() : 0),
+                        }
+                    );
+                    return event.flex.stop();
+                } else {
+                    return true;
+                }
+            },
+            move    : function(event){
+                var instance    = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT),
+                    container   = null;
+                if (instance !== null) {
+                    container               = instance.container;
+                    instance.posX           = (instance.posX - (instance.oldX - event.flex.pageX));
+                    instance.posY           = (instance.posY - (instance.oldY - event.flex.pageY));
+                    container.style.left    = instance.posX + 'px';
+                    container.style.top     = instance.posY + 'px';
+                    instance.oldX           = event.flex.pageX;
+                    instance.oldY           = event.flex.pageY;
+                }
+                return event.flex.stop();
+            },
+            stop    : function(event) {
+                flex.overhead.globaly.del(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT);
+            },
+            global: {
+                attach: function () {
+                    var isAttached  = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG);
+                    if (isAttached !== true) {
+                        flex.overhead.globaly.set(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG, true);
+                        _node(window).events().add(
+                            'mousemove',
+                            function (event) {
+                                render.move(event);
+                            },
+                            settings.GLOBAL_EVENT_ID
+                        );
+                        _node(window).events().add(
+                            'mouseup',
+                            function (event) {
+                                render.stop(event);
+                            },
+                            settings.GLOBAL_EVENT_ID
+                        );
+                    }
+                }
+            }
+        };
+        coreEvents  = {
+            attach: function (container, id) {
+                flex.events.core.listen(
+                    flex.registry.events.ui.window.maximize.GROUP,
+                    flex.registry.events.ui.window.maximize.MAXIMIZED,
+                    function (params) {
+                        return coreEvents.onRefreshByParent(params.container, container, flex.registry.events.ui.window.maximize.MAXIMIZED);
+                    },
+                    settings.STATE_STORAGE + id,
+                    false
+                );
+                flex.events.core.listen(
+                    flex.registry.events.ui.window.maximize.GROUP,
+                    flex.registry.events.ui.window.maximize.RESTORED,
+                    function (params) {
+                        return coreEvents.onRefreshByParent(params.container, container, flex.registry.events.ui.window.maximize.RESTORED);
+                    },
+                    settings.STATE_STORAGE + id,
+                    false
+                );
+            },
+            onRefreshByParent: function (parent, container, state) {
+                if (parent === container) {
+                    switch (state) {
+                        case flex.registry.events.ui.window.maximize.MAXIMIZED:
+                            flex.overhead.objecty.set(container, settings.STATE_STORAGE, true, true);
+                            break;
+                        case flex.registry.events.ui.window.maximize.RESTORED:
+                            flex.overhead.objecty.set(container, settings.STATE_STORAGE, false, true);
+                            break;
+                    }
+                }
+                return false;
+            }
+        };
+        patterns    = {
+            attach: function () {
+                flex.events.core.listen(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, function (nodes) {
+                    var context = nodes.length !== void 0 ? (nodes.length > 0 ? nodes[0].parentNode : null) : null;
+                    if (context !== null) {
+                        if (_node('*[' + settings.CONTAINER + ']:not([' + settings.INITED + '])', false, context).target !== null) {
+                            init();
+                        }
+                    }
+                });
+            }
+        };
+        privates = {
+            init : init
+        };
+        render.global.attach();
+        patterns.attach();
+        //Init modules
+        if (flex.libraries !== void 0) {
+            if (flex.libraries.events !== void 0 && flex.libraries.html !== void 0) {
+                flex.libraries.events.create();
+                flex.libraries.html.create();
+            }
+        }
+        return {
+            init : privates.init
+        };
+    };
+    //=== Binds module ===
+    Resize.prototype        = function () {
+        /* Description
+            * data-flex-ui-window-resize-container="id"
+            *
+            * Next field isn't necessary and can be skipped. You should define it for situation, when container get his position form parent.
+            * For example container has top:50% from parent. In this case you should define such parent by next mark
+            * data-flex-ui-window-resize-position-parent="id"
+            * */
+        var //Variables
+            privates        = null,
+            render          = null,
+            patterns        = null,
+            coreEvents      = null,
+            settings        = null;
+        settings = {
+            CONTAINER           : 'data-flex-ui-window-resize-container',
+            INITED              : 'data-flex-window-resize-inited',
+            HOOK                : 'data-flex-window-resize-hook',
+            HOOKS               : ['top', 'left', 'right', 'bottom', 'corner'],
+            HOOKS_STYLE         : {
+                top     : { node: 'div', style: { position: 'absolute', zIndex: 1, height: '6px', width: '100%', top: '0px', left: '0px', cursor: 'n-resize' } },
+                bottom  : { node: 'div', style: { position: 'absolute', zIndex: 1, height: '6px', width: '100%', bottom: '0px', left: '0px', cursor: 'n-resize' } },
+                left    : { node: 'div', style: { position: 'absolute', zIndex: 1, height: '100%', width: '6px', top: '0px', left: '0px', cursor: 'e-resize' } },
+                right   : { node: 'div', style: { position: 'absolute', zIndex: 1, height: '100%', width: '6px', top: '0px', right: '0px', cursor: 'e-resize'} },
+                corner  : { node: 'div', style: { position: 'absolute', zIndex: 1, height: '10px',    width: '10px',   bottom: '0px',  right: '0px', cursor: 'nw-resize' } }
+            },
+            POSITION_PARENT     : 'data-flex-ui-window-resize-position-parent',
+            GLOBAL_GROUP        : 'flex-window-resize',
+            GLOBAL_EVENT_FLAG   : 'flex-window-resize-global-event',
+            GLOBAL_CURRENT      : 'flex-window-resize-global-current',
+            GLOBAL_EVENT_ID     : 'flex-window-resize-global-event-id',
+            STATE_STORAGE       : 'flex-window-resize-instance-state',
+        };
+        function init(id) {
+            var id          = id || null,
+                containers  = _nodes('*[' + settings.CONTAINER + (id !== null ? '="' + id + '"' : '') + ']:not([' + settings.INITED + '])').target;
+            if (containers !== null) {
+                Array.prototype.forEach.call(
+                    containers,
+                    function (container) {
+                        var id = container.getAttribute(settings.CONTAINER);
+                        if (id !== null && id !== '') {
+                            Array.prototype.forEach.call(
+                                settings.HOOKS,
+                                function (hook) {
+                                    var hooks = render.hooks.get(id, container, hook);
+                                    render.attach(container, hooks, hook, id);
+                                    coreEvents.attach(container, id);
+                                }
+                            );
+                        }
+                        container.setAttribute(settings.INITED, true);
+                    }
+                );
+            }
+        };
+        render          = {
+            position    : {
+                getParent : function(id){
+                    return _node('*[' + settings.POSITION_PARENT + '="' + id + '"' + ']').target;
+                }
+            },
+            hooks       : {
+                make    : function (container, hook) {
+                    var node = document.createElement(settings.HOOKS_STYLE[hook].node);
+                    for (var property in settings.HOOKS_STYLE[hook].style) {
+                        node.style[property] = settings.HOOKS_STYLE[hook].style[property];
+                    }
+                    container.appendChild(node);
+                    return node;
+                },
+                get     : function (id, container, hook) {
+                    var hooks = _nodes('*[' + settings.CONTAINER + '="' + id + '"' + '][' + settings.HOOK + '="' + hook + '"' + ']:not([' + settings.INITED + '])').target;
+                    if (hooks.length === 0) {
+                        hooks = [];
+                        hooks.push(render.hooks.make(container, hook));
+                    }
+                    return hooks;
+                }
+            },
+            attach  : function (container, hooks, direction, id) {
+                var position_parent = render.position.getParent(id);
+                Array.prototype.forEach.call(
+                    hooks,
+                    function (hook) {
+                        _node(hook).events().add(
+                            'mousedown',
+                            function (event) {
+                                render.start(event, container, hook, direction, position_parent, id);
+                            },
+                            id
+                        );
+                    }
+                );
+            },
+            start: function (event, container, hook, direction, position_parent, id) {
+                function getPosition(node) {
+                    if (node.currentStyle) {
+                        if (node.currentStyle.position) {
+                            return node.currentStyle.position;
+                        }
+                    }
+                    if (window.getComputedStyle) {
+                        return window.getComputedStyle(node).position;
+                    }
+                    return null;
+                }
+                var size        = null,
+                    pos         = null,
+                    scrl        = null,
+                    isFixed     = null;
+                if (flex.overhead.objecty.get(container, settings.STATE_STORAGE, false, false) === false) {
+                    size        = _node(container).html().size().get();
+                    pos         = _node(position_parent !== null ? position_parent : container).html().position().byPage();
+                    scrl        = _node(container.parentNode).html().scroll().position();
+                    isFixed     = getPosition(container) !== 'fixed' ? false : true;
+                    flex.overhead.globaly.set(
+                        settings.GLOBAL_GROUP,
+                        settings.GLOBAL_CURRENT,
+                        {
+                            clientX         : event.flex.clientX,
+                            clientY         : event.flex.clientY,
+                            offsetX         : event.flex.offsetX,
+                            offsetY         : event.flex.offsetY,
+                            pageX           : event.flex.pageX,
+                            pageY           : event.flex.pageY,
+                            hook            : hook,
+                            direction       : direction,
+                            container       : container,
+                            position_parent : position_parent,
+                            id              : id,
+                            oldX            : event.flex.pageX,
+                            oldY            : event.flex.pageY,
+                            posX            : pos.left + (isFixed === false ? scrl.left() : 0),
+                            posY            : pos.top + (isFixed === false ? scrl.top() : 0),
+                            width           : size.width,
+                            height          : size.height
+                        }
+                    );
+                    return event.flex.stop();
+                } else {
+                    return true;
+                }
+            },
+            move    : function(event){
+                var instance            = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT),
+                    container           = null,
+                    position_container  = null;
+                if (instance !== null) {
+                    container           = instance.container;
+                    position_container  = instance.position_parent !== null ? instance.position_parent : container;
+                    switch (instance.direction) {
+                        case 'top':
+                            instance.posY                   = (instance.posY - (instance.oldY - event.flex.pageY));
+                            instance.height                 = (instance.height + (instance.oldY - event.flex.pageY));
+                            container.style.height          = instance.height + 'px';
+                            position_container.style.top    = instance.posY + 'px';
+                            break;
+                        case 'left':
+                            instance.posX                   = (instance.posX - (instance.oldX - event.flex.pageX));
+                            instance.width                  = (instance.width + (instance.oldX - event.flex.pageX));
+                            container.style.width           = instance.width + 'px';
+                            position_container.style.left   = instance.posX + 'px';
+                            break;
+                        case 'bottom':
+                            instance.height                 = (instance.height - (instance.oldY - event.flex.pageY));
+                            container.style.height          = instance.height + 'px';
+                            break;
+                        case 'right':
+                            instance.width                  = (instance.width - (instance.oldX - event.flex.pageX));
+                            container.style.width           = instance.width + 'px';
+                            break;
+                        case 'corner':
+                            instance.height                 = (instance.height - (instance.oldY - event.flex.pageY));
+                            container.style.height          = instance.height + 'px';
+                            instance.width                  = (instance.width - (instance.oldX - event.flex.pageX));
+                            container.style.width           = instance.width + 'px';
+                            break;
+                    }
+                    instance.oldX = event.flex.pageX;
+                    instance.oldY = event.flex.pageY;
+                    //Run external events in background
+                    setTimeout(
+                        function () {
+                            flex.events.core.fire(
+                                flex.registry.events.ui.window.resize.GROUP,
+                                flex.registry.events.ui.window.resize.REFRESH,
+                                { container: instance.container, id: instance.id }
+                            );
+                        },
+                        10
+                    );
+                }
+                return event.flex.stop();
+            },
+            stop    : function(event) {
+                var instance = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT);
+                if (instance !== null) {
+                    flex.events.core.fire(
+                        flex.registry.events.ui.window.resize.GROUP,
+                        flex.registry.events.ui.window.resize.FINISH,
+                        { container: instance.container, id: instance.id }
+                    );
+                }
+                flex.overhead.globaly.del(settings.GLOBAL_GROUP, settings.GLOBAL_CURRENT);
+            },
+            global: {
+                attach: function () {
+                    var isAttached  = flex.overhead.globaly.get(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG);
+                    if (isAttached !== true) {
+                        flex.overhead.globaly.set(settings.GLOBAL_GROUP, settings.GLOBAL_EVENT_FLAG, true);
+                        _node(window).events().add(
+                            'mousemove',
+                            function (event) {
+                                render.move(event);
+                            },
+                            settings.GLOBAL_EVENT_ID
+                        );
+                        _node(window).events().add(
+                            'mouseup',
+                            function (event) {
+                                render.stop(event);
+                            },
+                            settings.GLOBAL_EVENT_ID
+                        );
+                    }
+                }
+            }
+        };
+        coreEvents      = {
+            attach: function (container, id) {
+                flex.events.core.listen(
+                    flex.registry.events.ui.window.maximize.GROUP,
+                    flex.registry.events.ui.window.maximize.MAXIMIZED,
+                    function (params) {
+                        return coreEvents.onRefreshByParent(params.container, container, flex.registry.events.ui.window.maximize.MAXIMIZED);
+                    },
+                    settings.STATE_STORAGE + id,
+                    false
+                );
+                flex.events.core.listen(
+                    flex.registry.events.ui.window.maximize.GROUP,
+                    flex.registry.events.ui.window.maximize.RESTORED,
+                    function (params) {
+                        return coreEvents.onRefreshByParent(params.container, container, flex.registry.events.ui.window.maximize.RESTORED);
+                    },
+                    settings.STATE_STORAGE + id,
+                    false
+                );
+            },
+            onRefreshByParent: function (parent, container, state) {
+                if (parent === container) {
+                    switch (state) {
+                        case flex.registry.events.ui.window.maximize.MAXIMIZED:
+                            flex.overhead.objecty.set(container, settings.STATE_STORAGE, true, true);
+                            break;
+                        case flex.registry.events.ui.window.maximize.RESTORED:
+                            flex.overhead.objecty.set(container, settings.STATE_STORAGE, false, true);
+                            break;
+                    }
+                }
+                return false;
+            }
+        };
+        patterns        = {
+            attach: function () {
+                flex.events.core.listen(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, function (nodes) {
+                    var context = nodes.length !== void 0 ? (nodes.length > 0 ? nodes[0].parentNode : null) : null;
+                    if (context !== null) {
+                        if (_node('*[' + settings.CONTAINER + ']:not([' + settings.INITED + '])', false, context).target !== null) {
+                            init();
+                        }
+                    }
+                });
+            }
+        };
+        privates = {
+            init : init
+        };
+        render.global.attach();
+        patterns.attach();
+        //Init modules
+        if (flex.libraries !== void 0) {
+            if (flex.libraries.events !== void 0 && flex.libraries.html !== void 0) {
+                flex.libraries.events.create();
+                flex.libraries.html.create();
+            }
+        }
+        return {
+            init : privates.init
+        };
+    };
+    //=== HTML tools module ===
+    Html.prototype          = function () {
+        var select      = null,
+            find        = null,
+            privates    = null,
+            sizes       = null,
+            scroll      = null,
+            builder     = null,
+            styles      = null,
+            position    = null,
+            units       = null,
+            helpers     = null,
+            callers     = null,
+            settings    = null;
+        settings    = {
+            storage : {
+                GROUP           : 'flex.html',
+                SCROLL          : 'scroll',
+                CUSTOM_STYLES   : 'custom.styles'
+            },
+            classes : {
+                scroll: {
+                    MINIMAL_WIDTH   : 15,
+                    MINIMAL_HEIGHT  : 15
+                }
+            }
+        };
+        select      = {
+            bySelector  : function (){
+                var protofunction       = function () { };
+                protofunction.prototype = (function () {
+                    var cache       = null,
+                        privates    = null;
+                    cache = {
+                        data    : {},
+                        get     : function (selector) {
+                            var data = cache.data;
+                            return (data[selector] !== void 0 ? data[selector] : null);
+                        },
+                        add     : function (selector, nodes) {
+                            var data = cache.data;
+                            data[selector] = nodes;
+                            return nodes;
+                        },
+                        remove  : function (selector) {
+                            var data = cache.data;
+                            data[selector] = null;
+                            delete data[selector];
+                        },
+                        reset   : function () {
+                            cache.data = {};
+                        }
+                    };
+                    function first(selector, document_link) {
+                        if (typeof selector === 'string') {
+                            return (document_link || document).querySelector(selector);
+                        }
+                        return null;
+                    };
+                    function all(selector, document_link) {
+                        if (typeof selector === 'string') {
+                            return (document_link || document).querySelectorAll(selector);
+                        }
+                        return null;
+                    };
+                    function cachedFirst(selector, document_link) {
+                        var nodes = null;
+                        if (typeof selector === 'string') {
+                            nodes = cache.get(selector);
+                            if (nodes === null) {
+                                nodes = cache.add((document_link || document).querySelector(selector));
+                            }
+                            return nodes;
+                        }
+                        return null;
+                    };
+                    function cachedAll(selector, document_link) {
+                        var nodes = null;
+                        if (typeof selector === 'string') {
+                            nodes = cache.get(selector);
+                            if (nodes === null) {
+                                nodes = cache.add((document_link || document).querySelectorAll(selector));
+                            }
+                            return nodes;
+                        }
+                        return null;
+                    };
+                    privates = {
+                        first       : first,
+                        all         : all,
+                        cachedFirst : cachedFirst,
+                        cachedAll   : cachedAll,
+                        cacheReset  : cache.reset,
+                        cacheRemove : cache.remove
+                    };
+                    return {
+                        first       : privates.first,
+                        all         : privates.all,
+                        cachedFirst : privates.cachedFirst,
+                        cachedAll   : privates.cachedAll,
+                        cacheReset  : privates.cacheReset,
+                        cacheRemove : privates.cacheRemove
+                    };
+                }());
+                return new protofunction();
+            },
+            fromParent  : function () {
+                var protofunction = function () {
+                    this.selector = select.bySelector();
+                };
+                protofunction.prototype = {
+                    selector    : null,
+                    select      : function (parent, selector, only_first) {
+                        var id      = flex.unique(),
+                            nodes   = null,
+                            id_attr = "data-" + id;
+                        if (typeof parent.nodeName === "string") {
+                            parent.setAttribute(id_attr, id);
+                            nodes = this.selector[(only_first === false ? 'all' : 'first')](parent.nodeName + '[' + id_attr + '="' + id + '"] ' + selector);
+                            parent.removeAttribute(id_attr);
+                        }
+                        return nodes;
+                    },
+                    first       : function (parent, selector) {
+                        return this.select(parent, selector, true);
+                    },
+                    all         : function (parent, selector) {
+                        return this.select(parent, selector, false);
+                    }
+                };
+                return Object.freeze(new protofunction());
+            },
+        };
+        find        = function () { 
+            var protofunction = function () { };
+            protofunction.prototype = {
+                childByAttr : function (parent, nodeName, attribute) {
+                    var result_node = null,
+                        nodeName    = nodeName.toLowerCase(),
+                        self        = this;
+                    if (parent.childNodes !== void 0) {
+                        if (typeof parent.childNodes.length === "number") {
+                            Array.prototype.forEach.call(
+                                parent.childNodes,
+                                function (childNode) {
+                                    if (typeof childNode.nodeName === "string") {
+                                        if (childNode.nodeName.toLowerCase() === nodeName || nodeName === "*") {
+                                            if (typeof childNode.getAttribute === "function") {
+                                                if (attribute.value !== null) {
+                                                    if (childNode.getAttribute(attribute.name) === attribute.value) {
+                                                        return childNode;
+                                                    }
+                                                } else {
+                                                    if (childNode.hasAttribute(attribute.name) === true) {
+                                                        return childNode;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    result_node = self.childByAttr(childNode, nodeName, attribute);
+                                    if (result_node !== null) {
+                                        return result_node;
+                                    }
+                                }
+                            );
+                        }
+                    }
+                    return null;
+                },
+                childByType : function (parent, nodeName) {
+                    var result_node = null,
+                        nodeName    = nodeName.toLowerCase(),
+                        self        = this;
+                    if (parent.childNodes !== void 0) {
+                        if (typeof parent.childNodes.length === "number") {
+                            Array.prototype.forEach.call(
+                                parent.childNodes,
+                                function (childNode) {
+                                    if (typeof childNode.nodeName === "string") {
+                                        if (childNode.nodeName.toLowerCase() === nodeName) {
+                                            return childNode;
+                                        }
+                                    }
+                                }
+                            );
+                            Array.prototype.forEach.call(
+                                parent.childNodes,
+                                function (childNode) {
+                                    result_node = self.childByType(childNode, nodeName);
+                                    if (result_node !== null) {
+                                        return result_node;
+                                    }
+                                }
+                            );
+                        }
+                    }
+                    return null;
+                },
+                parentByAttr: function (child, attribute) {
+                    if (child !== void 0 && attribute !== void 0) {
+                        if (child.parentNode !== void 0) {
+                            if (child.parentNode !== null) {
+                                if (typeof child.parentNode.getAttribute === 'function') {
+                                    if (attribute.value !== null) {
+                                        if (child.parentNode.getAttribute(attribute.name) === attribute.value) {
+                                            return child.parentNode;
+                                        } else {
+                                            return this.parentByAttr(child.parentNode, attribute);
+                                        }
+                                    } else {
+                                        if (child.parentNode.getAttribute(attribute.name) !== null) {
+                                            return child.parentNode;
+                                        } else {
+                                            return this.parentByAttr(child.parentNode, attribute);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                }
+            };
+            return new protofunction();
+        };
+        sizes       = function () {
+            var protofunction       = function () { };
+            protofunction.prototype = {
+                nodeByClientRectSize    : function (node){
+                    var height                  = 0,
+                        width                   = 0,
+                        bounding_client_rect    = null;
+                    if (node.getBoundingClientRect !== void 0) {
+                        bounding_client_rect    = node.getBoundingClientRect();
+                        height                  = bounding_client_rect.bottom - bounding_client_rect.top;
+                        width                   = bounding_client_rect.right - bounding_client_rect.left;
+                    }
+                    return { height: height, width: width }
+                },
+                nodeByOffset            : function (node) {
+                    var height  = 0,
+                        width   = 0;
+                    if (node.offsetHeight !== void 0) {
+                        height  = node.offsetHeight;
+                        width   = node.offsetWidth;
+                    }
+                    return { height: height, width: width }
+                },
+                nodeWithMargin          : function (node) {
+                    var height      = 0,
+                        width       = 0,
+                        selector    = null,
+                        size        = this.node(node),
+                        top, bottom, right, left,
+                        b_top, b_bottom, b_right, b_left;
+                    if (typeof node === 'string') {
+                        selector    = select.bySelector();
+                        node        = selector.first(node);
+                        selector    = null;
+                    }
+                    if (node !== null) {
+                        top         = parseInt(document.defaultView.getComputedStyle(node).marginTop,           10);
+                        bottom      = parseInt(document.defaultView.getComputedStyle(node).marginBottom,        10);
+                        right       = parseInt(document.defaultView.getComputedStyle(node).marginRight,         10);
+                        left        = parseInt(document.defaultView.getComputedStyle(node).marginLeft,          10);
+                        b_top       = parseInt(document.defaultView.getComputedStyle(node).borderTopWidth,      10);
+                        b_bottom    = parseInt(document.defaultView.getComputedStyle(node).borderBottomWidth,   10);
+                        b_right     = parseInt(document.defaultView.getComputedStyle(node).borderRightWidth,    10);
+                        b_left      = parseInt(document.defaultView.getComputedStyle(node).borderLeftWidth,     10);
+                        if (top         === null || top         === NaN) { top          = 0; }
+                        if (bottom      === null || bottom      === NaN) { bottom       = 0; } 
+                        if (right       === null || right       === NaN) { right        = 0; }
+                        if (left        === null || left        === NaN) { left         = 0; }
+                        if (b_top       === null || b_top       === NaN) { b_top        = 0; }
+                        if (b_bottom    === null || b_bottom    === NaN) { b_bottom     = 0; }
+                        if (b_right     === null || b_right     === NaN) { b_right      = 0; }
+                        if (b_left      === null || b_left      === NaN) { b_left       = 0; }
+                    }
+                    return {
+                        height  : size.height + top + bottom + b_top + b_bottom,
+                        width   : size.width + right + left + b_right + b_left
+                    }
+                },
+                node                    : function (node) {
+                    var height      = 0,
+                        width       = 0,
+                        selector    = null,
+                        size        = { height : 0, width : 0 };
+                    if (typeof node === 'string') {
+                        selector    = select.bySelector();
+                        node        = selector.first(node);
+                        selector    = null;
+                    }
+                    if (node !== null) {
+                        size = this.nodeByClientRectSize(node);
+                        if (size.height === 0 && size.width === 0) {
+                            size = this.nodeByOffset(node);
+                        }
+                    }
+                    return size;
+                },
+                window                  : function () {
+                    if (self.innerHeight) {
+                        return {
+                            height  : self.innerHeight,
+                            width   : self.innerWidth
+                        };
+                    } else if (document.documentElement && document.documentElement.clientHeight) {
+                        return {
+                            height  : document.documentElement.clientHeight,
+                            width   : document.documentElement.clientWidth
+                        };
+                    }
+                    else if (document.body) {
+                        return {
+                            height  : document.body.clientHeight,
+                            width   : document.body.clientWidth
+                        };
+                    }
+                    return null;
+                },
+                image                   : function (image) {
+                    function generateSize(image) {
+                        var imageObj    = new Image(),
+                            size        = null;
+                        imageObj.src = image.src;
+                        size = {
+                            width   : imageObj.width,
+                            height  : imageObj.height
+                        };
+                        imageObj = null;
+                        return size;
+                    };
+                    if (image !== void 0) {
+                        if (typeof image.naturalWidth === 'number') {
+                            return {
+                                width   : image.naturalWidth,
+                                height  : image.naturalHeight
+                            }
+                        } else {
+                            return generateSize(image);
+                        }
+                    }
+                    return null;
+                },
+            };
+            return new protofunction();
+        };
+        scroll      = function () {
+            var protofunction       = function () { };
+            protofunction.prototype = {
+                window          : function () {
+                    var body = document.body,
+                        html = document.documentElement;
+                    return {
+                        top     : function () {
+                            return Math.max(
+                                body.scrollTop      || 0,
+                                html.scrollTop      || 0,
+                                body.pageYOffset    || 0,
+                                html.pageYOffset    || 0,
+                                window.pageYOffset  || 0
+                            );
+                        },
+                        left    : function () {
+                            return Math.max(
+                                body.scrollLeft     || 0,
+                                html.scrollLeft     || 0,
+                                body.pageXOffset    || 0,
+                                html.pageXOffset    || 0,
+                                window.pageXOffset  || 0
+                            );
+                        },
+                        height  : function () {
+                            return Math.max(
+                                body.scrollHeight || 0,
+                                body.offsetHeight || 0,
+                                html.clientHeight || 0,
+                                html.scrollHeight || 0,
+                                html.offsetHeight || 0
+                            );
+                        },
+                        width   : function () {
+                            return Math.max(
+                                body.scrollWidth || 0,
+                                body.offsetWidth || 0,
+                                html.clientWidth || 0,
+                                html.scrollWidth || 0,
+                                html.offsetWidth || 0
+                            );
+                        },
+                    };
+                },
+                get             : function (object) {
+                    if (object !== document.body && object !== document.documentElement) {
+                        return {
+                            top     : function () {
+                                return Math.max(
+                                    object.scrollTop    || 0,
+                                    object.pageYOffset  || 0
+                                );
+                            },
+                            left    : function () {
+                                return Math.max(
+                                    object.scrollLeft   || 0,
+                                    object.pageXOffset  || 0
+                                );
+                            },
+                            height  : function () {
+                                return Math.max(
+                                    object.scrollHeight || 0,
+                                    object.clientHeight || 0,
+                                    object.offsetHeight || 0
+                                );
+                            },
+                            width   : function () {
+                                return Math.max(
+                                    object.scrollWidth || 0,
+                                    object.clientWidth || 0,
+                                    object.offsetWidth || 0
+                                );
+                            }
+                        };
+                    } else {
+                        return this.window();
+                    }
+
+                },
+                scrollBarSize   : function () {
+                    function getSize() {
+                        var node    = document.createElement("DIV"),
+                            css     = styles(),
+                            result  = null;
+                        css.apply(
+                            node,
+                            {
+                                position    : 'absolute',
+                                top         : '-1000px',
+                                left        : '-1000px',
+                                width       : '300px',
+                                height      : '300px',
+                                overflow    : 'scroll',
+                                opacity     : '0.01',
+                            }
+                        );
+                        document.body.appendChild(node);
+                        result = {
+                            width   : node.offsetWidth  - node.clientWidth,
+                            height  : node.offsetHeight - node.clientHeight
+                        };
+                        result.probablyMobile   = (result.width     === 0 ? true : false);
+                        result.width            = (result.width     === 0 ? settings.classes.scroll.MINIMAL_WIDTH   : result.width  );
+                        result.height           = (result.height    === 0 ? settings.classes.scroll.MINIMAL_HEIGHT  : result.height );
+                        document.body.removeChild(node);
+                        return result;
+                        /*
+                        Здесь проблемное место. Дело в том, что на таблетках полоса проктутки накладывается на содержимое страницы.
+                        Это приводит к тому, что метод определения ширины полосы путем вычетания из общего размера области размера 
+                        содержимого не дает результатов, так как полоса прокрутки над содержимым и не "уменьшает" его. Но а найти
+                        на момент написания этого комментрия сколь нибудь достойных решений по определению размера полосы прокрутки
+                        на таблетках - не удалось. Поэтому и берется фиксированный размер в 15 пк. 
+                        23.01.2014
+                        */
+                    };
+                    var storaged = flex.overhead.globaly.get(settings.storage.GROUP, settings.storage.SCROLL, {});
+                    if (!storaged.value) {
+                        storaged.value = getSize();
+                    }
+                    return storaged.value;
+                }
+            };
+            return new protofunction();
+        };
+        builder     = function () {
+            var protofunction = function () { };
+            protofunction.prototype = {
+                build: function (attributes) {
+                    function settingup(attributes, nodes) {
+                        var parent = nodes[attributes.settingup.parent] || null;
+                        if (typeof attributes.settingup === "object" && nodes !== null && parent !== null) {
+                            Array.prototype.forEach.call(
+                                attributes.settingup.childs,
+                                function (child) {
+                                    if (nodes[child]) {
+                                        if (typeof attributes[child].settingup === "object") {
+                                            parent.appendChild(nodes[child][attributes[child].settingup.parent]);
+                                        } else {
+                                            parent.appendChild(nodes[child]);
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                    };
+                    function make(attribute) {
+                        var node = document.createElement(attribute.node);
+                        if (attribute.html !== null) {
+                            node.innerHTML = attribute.html;
+                        }
+                        Array.prototype.forEach.call(
+                            attribute.attrs,
+                            function (attr) {
+                                if (flex.oop.objects.validate(attr, [   { name: "name",     type: "string" },
+                                                                        { name: "value",    type: "string" }]) === true) {
+                                    node.setAttribute(attr.name, attr.value);
+                                }
+                            }
+                        );
+                        return node;
+                    };
+                    function validate(property) {
+                        return flex.oop.objects.validate(property, [{ name: "node",     type: "string"              },
+                                                                    { name: "attrs",    type: "array",  value: []   },
+                                                                    { name: "html",     type: "string", value: null }]);
+                    };
+                    var nodes = {};
+                    try {
+                        if (validate(attributes) === true) {
+                            return make(attributes);
+                        } else {
+                            for (var property in attributes) {
+                                if (validate(attributes[property]) === true) {
+                                    nodes[property] = make(attributes[property]);
+                                } else {
+                                    if (typeof attributes[property] === "object" && property !== "settingup") {
+                                        nodes[property] = this.build(attributes[property]);
+                                        if (nodes[property] === null) {
+                                            return null;
+                                        }
+                                    }
+                                }
+                            }
+                            settingup(attributes, nodes);
+                        }
+                    } catch (e) {
+                        return null;
+                    }
+                    return nodes;
+                }
+            };
+            return new protofunction();
+        };
+        styles      = function () {
+            var protofunction       = function () { };
+            protofunction.prototype = {
+                apply           : function (node, styles) {
+                    if (node && typeof styles === 'object') {
+                        if (node.style) {
+                            for (var property in styles) {
+                                node.style[property] = styles[property];
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                redraw          : function (node){
+                    if (node){
+                        if (node.style !== void 0) {
+                            node.style.display = 'none';
+                            node.style.display = '';
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                getRuleFromSheet: function (sheet, selector) {
+                    /// <summary>
+                    /// Get rule from CSS for defined selector
+                    /// </summary>
+                    /// <param name="sheet"     type="sheet"    >CSS sheet</param>
+                    /// <param name="selector"  type="string"   >CSS selector</param>
+                    /// <returns type="array">Rules for selector</returns>
+                    var sheets  = document.styleSheets,
+                        styles  = null,
+                        rules   = [];
+                    try {
+                        selector = selector.replace(/['"]/gi, '|');
+                        Array.prototype.forEach.call(
+                            (sheet.cssRules || sheet.rules),
+                            function (rule, index) {
+                                if (rule.selectorText) {
+                                    if (rule.selectorText.replace(/['"]/gi, '|') === selector) {
+                                        rules.push({
+                                            rule    : rule,
+                                            style   : rule.style || null,
+                                            index   : index,
+                                            cssText : (rule.cssText || '')
+                                        });
+                                    }
+                                } else if (typeof rule.cssText === 'string') {
+                                    if (rule.cssText.indexOf(selector.toLowerCase()) === 0) {
+                                        rules.push({
+                                            rule    : rule,
+                                            style   : rule.style || null,
+                                            index   : index,
+                                            cssText : (rule.cssText || '')
+                                        });
+                                    }
+                                }
+                            }
+                        );
+                    } catch (e) {
+                    } finally {
+                        return rules.length > 0 ? rules : null;
+                    }
+                },
+                getRule         : function (selector) {
+                    /// <summary>
+                    /// Get rule from CSS for defined selector
+                    /// </summary>
+                    /// <param name="selector"  type="string"   >CSS selector</param>
+                    /// <returns type="array">Rules for selector</returns>
+                    var sheets  = document.styleSheets,
+                        styles  = null,
+                        rules   = [],
+                        self    = this;
+                    try {
+                        selector = selector.replace(/['"]/gi, '|');
+                        Array.prototype.forEach.call(
+                            document.styleSheets,
+                            function (sheet) {
+                                var result = self.getRuleFromSheet(sheet, selector);
+                                if (result !== null) {
+                                    rules = rules.concat(result);
+                                }
+                            }
+                        );
+                    } catch (e) {
+                    } finally {
+                        return rules.length > 0 ? rules : null;
+                    }
+                },
+                setRule         : function (selector, cssText) {
+                    var sheet = flex.overhead.globaly.get(settings.storage.GROUP, settings.storage.CUSTOM_STYLES);
+                    if (typeof cssText === 'string') {
+                        if (sheet === null) {
+                            sheet       = document.createElement("style");
+                            sheet.type  = "text/css";
+                            document.head.appendChild(sheet);
+                            sheet       = sheet.styleSheet || sheet.sheet;
+                            flex.overhead.globaly.set(settings.storage.GROUP, settings.storage.CUSTOM_STYLES, sheet);
+                        }
+                        if (sheet.insertRule) {
+                            sheet.insertRule(selector + ' {' + cssText + '}', sheet.cssRules.length);
+                            return {
+                                rule    : sheet.cssRules[sheet.cssRules.length - 1],
+                                index   : sheet.cssRules.length - 1,
+                                sheet   : sheet
+                            };
+                        } else if (sheet.addRule) {
+                            sheet.addRule(selector + ' {' + cssText + '}', -1);
+                            return {
+                                rule    : sheet.cssRules[sheet.cssRules.length - 1],
+                                index   : sheet.cssRules.length - 1,
+                                sheet   : sheet
+                            };
+                        }
+                    }
+                    return null;
+                },
+                updateRule      : function (sheet, rule, cssText) {
+                    var selector = rule.selectorText;
+                    this.deleteRule(sheet, rule);
+                    return this.setRule(selector, cssText);
+                },
+                deleteRule      : function (sheet, target, deep) {
+                    function getIndex(self, target, sheet, deep) {
+                        var result = null;
+                        if (target !== void 0) {
+                            if (typeof target === 'string') {
+                                //selector
+                                if (deep === false && sheet !== null) {
+                                    result = self.getRuleFromSheet(sheet, target);
+                                } else {
+                                    result = self.getRule(target);
+                                }
+                                if (result !== null) {
+                                    if (result.length === 1) {
+                                        return result[0].index;
+                                    }
+                                }
+                            } else if (typeof target === 'number') {
+                                //index
+                                return target;
+                            } else if (typeof target === 'object') {
+                                //rule object
+                                if (sheet !== null) {
+                                    return self.getRuleIndex(sheet, target);
+                                }
+                            }
+                        }
+                        return -1;
+                    };
+                    var sheet   = sheet || flex.overhead.globaly.get(settings.storage.GROUP, settings.storage.CUSTOM_STYLES),
+                        deep    = typeof deep === 'boolean' ? deep : true,
+                        index   = getIndex(this, target, sheet, deep);
+                    if (index !== -1 && sheet !== null) {
+                        if (sheet.deleteRule) {
+                            sheet.deleteRule(index);
+                            return true;
+                        } else if (sheet.removeRule) {
+                            sheet.removeRule(index);
+                            return true;
+                        }
+                    }
+                    return null
+                },
+                getRuleIndex    : function (sheet, rule){
+                    var index = -1;
+                    try{
+                        Array.prototype.forEach.call(
+                            sheet.cssRules,
+                            function(_rule, rule_index){
+                                if (_rule === rule){
+                                    index = rule_index;
+                                    throw 'found';
+                                }
+                            }
+                        );
+                    }catch(e){
+                        if (e === 'found'){
+                            return index;
+                        }
+                    }
+                    return -1;
+                },
+                addClass        : function (node, name) {
+                    if (node.className !== void 0) {
+                        if (node.className.search(name) === -1) {
+                            node.className += name;
+                        }
+                    }
+                },
+                removeClass     : function (node, name) {
+                    if (node.className !== void 0) {
+                        if (node.className.search(name) !== -1) {
+                            node.className = node.className.replace(name, '');
+                        }
+                    }
+                },
+            };
+            return new protofunction();
+        };
+        position    = function () {
+            var protofunction = function () { };
+            protofunction.prototype = (function () {
+                var tools       = null,
+                    byPage      = null,
+                    byWindow    = null,
+                    privates    = null;
+                position = {
+                    old     : function (node) {
+                        var top     = 0,
+                            left    = 0;
+                        while (node) {
+                            if (node.offsetTop !== void 0 && node.offsetLeft !== void 0) {
+                                top     += parseFloat(node.offsetTop    );
+                                left    += parseFloat(node.offsetLeft   );
+                            }
+                            node = node.offsetParent;
+                        }
+                        return {
+                            top : top,
+                            left: left
+                        };
+                    },
+                    modern  : function (node) {
+                        var box                 = null,
+                            objBody             = null,
+                            objDocumentElement  = null,
+                            scrollTop           = null,
+                            scrollLeft          = null,
+                            clientTop           = null,
+                            clientLeft          = null;
+                        box                 = node.getBoundingClientRect();
+                        objBody             = document.body;
+                        objDocumentElement  = document.documentElement;
+                        scrollTop           = window.pageYOffset || objDocumentElement.scrollTop || objBody.scrollTop;
+                        scrollLeft          = window.pageXOffset || objDocumentElement.scrollLeft || objBody.scrollLeft;
+                        clientTop           = objDocumentElement.clientTop || objBody.clientTop || 0;
+                        clientLeft          = objDocumentElement.clientLeft || objBody.clientLeft || 0;
+                        return {
+                            top : box.top + scrollTop - clientTop,
+                            left: box.left + scrollLeft - clientLeft
+                        };
+                    }
+                };
+                byPage      = function (node) {
+                    var top             = null,
+                        left            = null,
+                        box             = null,
+                        offset          = null,
+                        scrollTop       = null,
+                        scrollLeft      = null;
+                    try {
+                        box     = node.getBoundingClientRect();
+                        top     = box.top;
+                        left    = box.left;
+                    } catch (e) {
+                        offset          = position.old(node);
+                        scrollTop       = window.pageYOffset || objDocumentElement.scrollTop || objBody.scrollTop;
+                        scrollLeft      = window.pageXOffset || objDocumentElement.scrollLeft || objBody.scrollLeft;
+                        top             = offset.top - scrollTop;
+                        left            = offset.left - scrollLeft;
+                    } finally {
+                        return {
+                            top : top,
+                            left: left
+                        };
+                    }
+                };
+                byWindow    = function (node) {
+                    var result = null;
+                    try {
+                        result = position.modern(node);
+                    } catch (e) {
+                        result = position.old(node);
+                    } finally {
+                        return result;
+                    }
+                };
+                privates    = {
+                    byPage      : byPage,
+                    byWindow    : byWindow
+                };
+                return {
+                    byPage  : privates.byPage,
+                    byWindow: privates.byWindow,
+                }
+            }());
+            return new protofunction();
+        };
+        units       = function () { 
+            var protofunction       = function () { };
+            protofunction.prototype = {
+                em  : function (context) {
+                    context = context || document.documentElement;
+                    context = context.parentNode ? context : document.documentElement;
+                    return parseFloat(getComputedStyle(context).fontSize);
+                },
+                rem : function () {
+                    this.em(document.documentElement);
+                },
+            };
+            return new protofunction();
+        };
+        helpers     = {
+            validateNode: function (node) {
+                var selector = null;
+                if (node) {
+                    if (typeof node === 'string') {
+                        selector    = select.bySelector();
+                        node        = selector.first(node);
+                    }
+                    if (node !== null) {
+                        if (node.parentNode !== void 0) {
+                            return node;
+                        }
+                    }
+                }
+                return null;
+            },
+            appendChilds: function (parent, childs) {
+                for (var index = childs.length - 1; index >= 0; index -= 1) {
+                    parent.appendChild(childs[0]);
+                }
+            }
+        };
+        callers     = {
+            init: function () {
+                function SizeClass      () { if (_size      === null) { _size       = sizes             (); } };
+                function PositionClass  () { if (_position  === null) { _position   = position          (); } };
+                function StylesClass    () { if (_styles    === null) { _styles     = styles            (); } };
+                function ScrollClass    () { if (_scroll    === null) { _scroll     = scroll            (); } };
+                function FindClass      () { if (_find      === null) { _find       = find              (); } };
+                function SelectorClass  () { if (_selector  === null) { _selector   = select.fromParent (); } };
+                var _size       = null,
+                    _position   = null,
+                    _styles     = null,
+                    _scroll     = null,
+                    _find       = null,
+                    _selector   = null;
+                //_node
+                flex.callers.define.node('html.size.get',                   function () {
+                    SizeClass();
+                    return _size.node(this.target);
+                });
+                flex.callers.define.node('html.size.getWithMargin',         function () {
+                    SizeClass();
+                    return _size.nodeWithMargin(this.target);
+                });
+                flex.callers.define.node('html.size.getByClientRectSize',   function () {
+                    SizeClass();
+                    return _size.nodeByClientRectSize(this.target);
+                });
+                flex.callers.define.node('html.size.getByOffset',           function () {
+                    SizeClass();
+                    return _size.nodeByOffset(this.target);
+                });
+                flex.callers.define.node('html.position.byPage',            function () {
+                    PositionClass();
+                    return _position.byPage(this.target);
+                });
+                flex.callers.define.node('html.position.byWindow',          function () {
+                    PositionClass();
+                    return _position.byWindow(this.target);
+                });
+                flex.callers.define.node('html.styles.apply',               function (styles) {
+                    StylesClass();
+                    return _styles.apply(this.target, styles);
+                });
+                flex.callers.define.node('html.styles.redraw',              function () {
+                    StylesClass();
+                    return _styles.redraw(this.target);
+                });
+                flex.callers.define.node('html.styles.addClass',            function (class_name) {
+                    StylesClass();
+                    return _styles.addClass(this.target, class_name);
+                });
+                flex.callers.define.node('html.styles.removeClass',         function (class_name) {
+                    StylesClass();
+                    return _styles.removeClass(this.target, class_name);
+                });
+                flex.callers.define.node('html.scroll.position',            function () {
+                    ScrollClass();
+                    return _scroll.get(this.target);
+                });
+                flex.callers.define.node('html.find.childByAttr',           function (node_name, attribute) {
+                    FindClass();
+                    return _find.childByAttr(this.target, node_name, attribute);
+                });
+                flex.callers.define.node('html.find.childByType',           function (node_name) {
+                    FindClass();
+                    return _find.childByType(this.target, node_name);
+                });
+                flex.callers.define.node('html.find.parentByAttr',          function (attribute) {
+                    FindClass();
+                    return _find.parentByAttr(this.target, attribute);
+                });
+                flex.callers.define.node('html.find.node',                  function (selector) {
+                    SelectorClass();
+                    return _selector.first(this.target, selector);
+                });
+                flex.callers.define.node('html.find.nodes',                 function (selector) {
+                    SelectorClass();
+                    return _selector.all(this.target, selector);
+                });
+                //_nodes
+                flex.callers.define.nodes('html.size.get',                   function () {
+                    var result = [];
+                    SizeClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_size.node(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.size.getWithMargin',         function () {
+                    var result = [];
+                    SizeClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_size.nodeWithMargin(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.size.getByClientRectSize',   function () {
+                    var result = [];
+                    SizeClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_size.nodeByClientRectSize(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.size.getByOffset',           function () {
+                    var result = [];
+                    SizeClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_size.nodeByOffset(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.position.byPage',            function () {
+                    var result = [];
+                    PositionClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_position.byPage(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.position.byWindow',          function () {
+                    var result = [];
+                    PositionClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_position.byWindow(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.styles.apply',               function (styles) {
+                    var result = [];
+                    StylesClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_styles.apply(target, styles));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.styles.redraw',              function () {
+                    var result = [];
+                    StylesClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_styles.redraw(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.styles.addClass',            function (class_name) {
+                    var result = [];
+                    StylesClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_styles.addClass(target, class_name));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.styles.removeClass',         function (class_name) {
+                    var result = [];
+                    StylesClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_styles.removeClass(target, class_name));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.scroll.position',            function () {
+                    var result = [];
+                    ScrollClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_scroll.get(target));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.find.childByAttr',           function (node_name, attribute) {
+                    var result = [];
+                    FindClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_find.childByAttr(target, node_name, attribute));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.find.childByType',           function (node_name) {
+                    var result = [];
+                    FindClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_find.childByType(target, node_name));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.find.parentByAttr',          function (attribute) {
+                    var result = [];
+                    FindClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(_find.parentByAttr(target, attribute));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.find.node',                  function (selector) {
+                    var result = [];
+                    SelectorClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(selector.first(target, selector));
+                    });
+                    return result;
+                });
+                flex.callers.define.nodes('html.find.nodes',                 function (selector) {
+                    var result = [];
+                    SelectorClass();
+                    Array.prototype.forEach.call(this.target, function (target) {
+                        result.push(selector.all(target, selector));
+                    });
+                    return result;
+                });
+            }
+        };
+        //Initialization of callers
+        callers.init();
+        //Public part
+        privates    = {
+            select  : {
+                bySelector  : select.bySelector,
+                fromParent  : select.fromParent
+            },
+            find    : find,
+            size    : sizes,
+            scroll  : scroll,
+            builder : builder,
+            styles  : styles,
+            position: position,
+            units   : units,
+            helpers : helpers
+        };
+        return {
+            select      : {
+                bySelector: privates.select.bySelector,
+                fromParent: privates.select.fromParent
+            },
+            find        : privates.find,
+            size        : privates.size,
+            scroll      : privates.scroll,
+            builder     : privates.builder,
+            styles      : styles,
+            position    : privates.position,
+            units       : units,
+            helpers     : privates.helpers
+        };
+    };
     //=== Core module ===
-    Core                    = function () { };
     //Define class
     Core.prototype          = function () {
         var config          = {},
@@ -5370,7 +7476,7 @@
                 queue       : {
                     queue       : {},
                     journal     : {},
-                    isLock      : true,
+                    isLock      : false,
                     unlock      : function () {
                         hashes.update.queue.isLock = false;
                         hashes.update.proceed();
@@ -6081,6 +8187,131 @@
                     };
                 }())
             },
+            core    : {
+                storage : {},
+                listen  : function (group, name, handle, id, registered_only) {
+                    /// <signature>
+                    ///     <summary>Add core's events listener </summary>
+                    ///     <param name="group"             type="string"   >Name of event group</param>
+                    ///     <param name="name"              type="string"   >Name of event</param>
+                    ///     <param name="handle"            type="function" >Handle</param>
+                    ///     <param name="id"                type="string"   >[optional][unique ID] ID of event</param>
+                    ///     <returns type="boolean / string">return ID of listener - if attached; false - if not</returns>
+                    /// </signature>
+                    /// <signature>
+                    ///     <summary>Add core's events listener </summary>
+                    ///     <param name="group"             type="string"   >Name of event group</param>
+                    ///     <param name="name"              type="string"   >Name of event</param>
+                    ///     <param name="handle"            type="function" >Handle</param>
+                    ///     <param name="id"                type="string"   >[optional][unique ID] ID of event</param>
+                    ///     <param name="registered_only"   type="boolean"  >[optional][false] Add listener only if event was registered before</param>
+                    ///     <returns type="boolean / string">return ID of listener - if attached; false - if not</returns>
+                    /// </signature>
+                    var group           = group || null,
+                        name            = name      || null,
+                        handle          = handle    || null,
+                        id              = id        || IDs.id(),
+                        registered_only = typeof registered_only !== 'boolean' ? false : registered_only,
+                        storage         = null,
+                        core            = events.core;
+                    if (group !== null && name !== null && handle !== null) {
+                        if (registered_only !== false) {
+                            if (core.get(group, name) === null) {
+                                return false;
+                            }
+                        }
+                        storage = core.register(group, name);
+                        if (id in storage) {
+                            //Here should be message about rewrite existing handle
+                            //LOGS!
+                        }
+                        storage[id] = handle;
+                        return id;
+                    }
+                    return false;
+                },
+                remove  : function (group, name, id) {
+                    /// <summary>
+                    /// Remove core's events listener 
+                    /// </summary>
+                    /// <param name="group" type="string">Name of event group</param>
+                    /// <param name="name"  type="string">Name of event</param>
+                    /// <param name="id"    type="string">ID of event</param>
+                    /// <returns type="boolean">true - removed; false - not found</returns>
+                    var group = group || null,
+                        name            = name      || null,
+                        id              = id        || null,
+                        storage         = null,
+                        global_starage  = events.core.storage,
+                        core            = events.core;
+                    if (group !== null && name !== null && id !== null) {
+                        storage = core.register(group, name);
+                        if (id in storage) {
+                            storage[id] = null;
+                            delete storage[id];
+                            if (Object.keys(storage).length === 0) {
+                                global_starage[group][name] = null;
+                                delete global_starage[group][name];
+                                if (Object.keys(global_starage[group]).length === 0) {
+                                    global_starage[group] = null;
+                                    delete global_starage[group];
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                register: function (group, name) {
+                    /// <summary>
+                    /// Register core's event 
+                    /// </summary>
+                    /// <param name="group" type="string">Name of event group</param>
+                    /// <param name="name"  type="string">Name of event</param>
+                    /// <returns type="object">Storage of registered event</returns>
+                    var storage = events.core.storage;
+                    if (!(group in storage      )) { storage[group]         = {}; }
+                    if (!(name in storage[group])) { storage[group][name]   = {}; }
+                    return storage[group][name];
+                },
+                get     : function (group, name) {
+                    /// <summary>
+                    /// Get storage of registered core's event 
+                    /// </summary>
+                    /// <param name="group" type="string">Name of event group</param>
+                    /// <param name="name"  type="string">Name of event</param>
+                    /// <returns type="object" mayBeNull="true">Storage of registered event. NULL if event isn't registered</returns>
+                    var storage = events.core.storage;
+                    if (!(group in storage      )) { return null; }
+                    if (!(name in storage[group])) { return null; }
+                    return storage[group][name];
+                },
+                fire    : function (group, name, params) {
+                    /// <signature>
+                    ///     <summary>Call handles of registered core's event</summary>
+                    ///     <param name="group"     type="string"   >Name of event group</param>
+                    ///     <param name="name"      type="string"   >Name of event</param>
+                    ///     <returns type="void">void</returns>
+                    /// </signature>
+                    /// <signature>
+                    ///     <summary>Call handles of registered core's event</summary>
+                    ///     <param name="group"     type="string"   >Name of event group</param>
+                    ///     <param name="name"      type="string"   >Name of event</param>
+                    ///     <param name="params"    type="any"      >Parameters for all called handles</param>
+                    ///     <returns type="void">void</returns>
+                    /// </signature>
+                    var handles = events.core.get(group, name);
+                    if (handles !== null) {
+                        for (var id in handles) {
+                            try{
+                                handles[id](params);
+                            } catch (e) {
+                                //LOGS!
+                            }
+                        }
+                    }
+                }
+            }
         };
         system          = {
             handle      : function (handle_body, handle_arguments, call_point, this_argument, safely) {
@@ -7065,7 +9296,7 @@
                             }
                         } else {
                             if (selector !== void 0) {
-                                if (typeof selector.nodeName === 'string') {
+                                if (typeof selector.nodeName === 'string' || selector == window) {
                                     return new wrappers.constructors.node(selector);
                                 }
                             }
@@ -7258,6 +9489,12 @@
                     add     : events.DOM.add,
                     remove  : events.DOM.remove,
                 },
+                core: {
+                    fire    : events.core.fire,
+                    listen  : events.core.listen,
+                    register: events.core.register,
+                    remove  : events.core.remove,
+                }
             },
             overhead        : {
                 globaly: {
@@ -7363,7 +9600,7 @@
         //Build wrappers
         wrappers.build();
         //Add wrappers
-        oop.    wrappers.objects();
+        oop.wrappers.objects();
         //Public methods and properties
         return {
             init            : privates.init,
@@ -7386,6 +9623,12 @@
                     add     : privates.events.DOM.add,
                     remove  : privates.events.DOM.remove,
                 },
+                core: {
+                    fire    : privates.events.core.fire,
+                    listen  : privates.events.core.listen,
+                    register: privates.events.core.register,
+                    remove  : privates.events.core.remove,
+                }
             },
             overhead        : {
                 globaly: {
@@ -7484,16 +9727,6 @@
     //Create core
     Core.prototype          = Core.prototype();
     window['flex'       ]   = new Core();
-    //Create prototypes
-    Events.prototype        = Events.prototype();
-    Binds.prototype         = Binds.prototype();
-    Patterns.prototype      = Patterns.prototype();
-    //Init libraries
-    window['flex'       ].libraries = {
-        events  : new Events(),
-        binds   : new Binds(),
-        patterns: new Patterns()
-    };
     //Define short callers
     window['_node'      ]   = flex.callers.node;
     window['_nodes'     ]   = flex.callers.nodes;
@@ -7501,5 +9734,53 @@
     window['_object'    ]   = flex.callers.object;
     window['_string'    ]   = flex.callers.string;
     window['_boolean'   ]   = flex.callers.boolean;
+    //Create register
+    flex.registry           = {};
+    flex.registry.events    = {
+        ui: {
+            window: {
+                resize  : {
+                    GROUP   : 'flex.ui.window.resize',
+                    REFRESH : 'refresh',
+                    FINISH  : 'finish',
+                },
+                maximize: {
+                    GROUP       : 'flex.ui.window.maximize',
+                    MAXIMIZED   : 'maximized',
+                    RESTORED    : 'restored',
+                    CHANGE      : 'change',
+                }
+            },
+            patterns: {
+                GROUP   : 'flex.ui.patterns',
+                MOUNTED : 'mounted',
+            }
+        }
+    };
+    //Create prototypes
+    Events.prototype        = Events.prototype();
+    Binds.prototype         = Binds.prototype();
+    Patterns.prototype      = Patterns.prototype();
+    Html.prototype          = Html.prototype();
+    Focus.prototype         = Focus.prototype();
+    Move.prototype          = Move.prototype();
+    Resize.prototype        = Resize.prototype();
+    Maximize.prototype      = Maximize.prototype();
+    //Init libraries
+    window['flex'       ].libraries = {
+        events  : new Events(),
+        binds   : new Binds(),
+        patterns: new Patterns(),
+        html    : new Html(),
+        ui      : {
+            window: {
+                move    : new Move(),
+                resize  : new Resize(),
+                maximize: new Maximize(),
+                focus   : new Focus()
+            }
+        }
+    };
+    //Define other short callers
     window['_patterns'  ]   = flex.libraries.patterns;
 }());

@@ -257,3 +257,5 @@ _Pvt_Extensions
 /packages.config
 /Global.asax.cs
 /Global.asax
+/Content
+/patterns/controls/textinput_con
