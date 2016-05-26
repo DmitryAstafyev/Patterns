@@ -9767,20 +9767,20 @@
     Resize.prototype        = Resize.prototype();
     Maximize.prototype      = Maximize.prototype();
     //Init libraries
-    window['flex'       ].libraries = {
+    window['flex'].libraries = {
         events  : new Events(),
         binds   : new Binds(),
-        patterns: new Patterns(),
         html    : new Html(),
         ui      : {
-            window: {
+            window  : {
                 move    : new Move(),
                 resize  : new Resize(),
                 maximize: new Maximize(),
                 focus   : new Focus()
-            }
+            },
+            patterns: new Patterns(),
         }
     };
     //Define other short callers
-    window['_patterns'  ]   = flex.libraries.patterns;
+    window['_patterns']   = flex.libraries.ui.patterns;
 }());
