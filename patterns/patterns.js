@@ -450,7 +450,7 @@
                                                 controllers.current.set(url);
                                                 flex.resources.attach.js.adoption(storaged, function () {
                                                     flex.overhead.register.done(register_id, url);
-                                                    controllers.current.set(url);
+                                                    controllers.current.reset(url);
                                                 });
                                                 storage.add(url, storaged);
                                             }
