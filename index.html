@@ -1,0 +1,1780 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Flex - Patterns</title>
+	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,700,300italic,400italic&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="scripts/google-code-prettify/atelier-sulphurpool-light.css" />
+    <script type="text/javascript" src="scripts/google-code-prettify/prettify.js"></script>
+</head>
+<body>
+    <div data-type="Background"></div>
+    <div data-type="Logo">
+        <div data-type="Logo.Left">
+            <div data-type="Logo.Left.Content"></div>
+        </div>
+        <div data-type="Logo.Right">
+            <div data-type="Logo.Right.Content">
+                <p data-type="Logo.Right.Content.First">flex</p>
+                <p data-type="Logo.Right.Content.Second">patterns</p>
+            </div>
+        </div>
+    </div>
+    <div data-type="Global">
+        <div data-type="Global.Container">
+            <div data-type="Global.Content.Wrapper">
+                <div data-type="Global.Content">
+                <!--BEGIN::CONTENT-->
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_0" data-type="title">What is it?</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">Flex-patterns is a front-end library (which can be extended to framework), which allows to use simple HTML files as templates. Flex-patterns doesn’t use any special syntax and any special ways for developing. Everything what you need: know HTML, CSS and a little bit JavaScript.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common" >
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_1" data-type="title">Most important features</a></p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Side" data-side="left">
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">1</span><span data-type="bold">Cache controller.</span> <span>All templates are cached automatically. It means, during each next loading of page, flex-patterns will try find cached version of templates and apply it instead loading it from server. </span></p>
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">2</span><span data-type="bold">Easy.</span> <span>Using flex-patterns is really easy. You don’t have to study any special syntax and some new logic. You just create a template as a standard HTML file. Also it gives you easy way to debug your template, because you can open it as separate HTML-file.</span></p>
+                        </div>
+                        <div data-type="Row.Simple.Side" data-side="right">
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">3</span><span data-type="bold">Scalable.</span> <span>You can easy add your own solutions, your own functionality into flex-patterns. It gives you many possibilities to develop large and stable solutions. Besides you can easy refuse from JQuery (if you don’t use JQ-style).</span></p>
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">4</span><span data-type="bold">Repeated use.</span> <span>You can develop your own collection of templates. It can be controls, some element or heavy items with hard logic. In any case, each template has own scope and can be usage anywhere.</span></p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common" >
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_2" data-type="title">How it works?</a></p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Side" data-side="left">
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">1</span><span data-type="bold">Creating of template.</span> <span>You create a template as simple HTML file and mark places for content. You can create JS-controller to add some functionality of your template. You define some styles for your template and attach it as CSS file.</span></p>
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">2</span><span data-type="bold">Attaching.</span> <span>You can attach your template to the page via HTML or within JavaScript. After you will attach a template, flex-patterns loads HTML, CSS and JS of template and apply it to the page.</span></p>
+                        </div>
+                        <div data-type="Row.Simple.Side" data-side="right">
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">3</span><span data-type="bold">Caching.</span> <span>Flex-patterns will automatically cache your template and sources (CSS and JS) to make possible load it from cache (instead requests to server) during next loading of page.</span></p>
+                            <p data-type="label" data-size="normal" data-align="left"><span data-type="number" data-color="orange">4</span><span data-type="bold">Always actual.</span> <span>Flex-patterns automatically creates hashes for your templates and resources. If some file has to be updated (for example, it was changed), flex-pattern will do it automatically.</span></p>
+                        </div>
+                    </div>
+
+                    <!--SECTION-->
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_3" data-type="title">Installation</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">Just attach script of flex-patterns to your page. That’s all.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;script type="text/javascript" src="patterns.js"&gt;&lt;/script&gt;</pre>
+                    </div>
+
+                    <!--SECTION-->
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_4" data-type="title">Creating template</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">To create template, you should know only three definitions:</p>
+                            <ul data-type="list">
+                                <li><span data-type="bold">Hook.</span> <span data-type="code">{{name}}</span>. Hook is a mark to paste some content at marked place.</li>
+                                <li><span data-type="bold">Model.</span> <span data-type="code">{{::name}}</span>. By this mark you bind some property or attribute of node with model. For example, you can bind some place of some node and get access to it within something like this: <span data-type="code">model.myLable = "new HTML for this label"</span>.</li>
+                                <li><span data-type="bold">Dom.</span> <span data-type="code">{{$name}}</span>. For all nodes (which was marked within <span data-type="code">{{$name}}</span>) flex-patterns will create special wrapper to give you easy access to such functionality like: changing styles; attaching events, checking properties and etc.</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">The best way to explain something – show example. So, to see how it works, let’s create simple dialog for authorization. We will need several temples:</p>
+                            <ul data-type="list">
+                                <li><span data-type="bold">Popup.</span> Template of popup window - <a href="patterns/popup/pattern.html" target="_blank" data-type="example">link</a>.</li>
+                                <li><span data-type="bold">Textbox.</span> Template of text area: login and password - <a href="patterns/controls/textinput/pattern.html" target="_blank" data-type="example">link</a></li>
+                                <li><span data-type="bold">Button.</span> Template of button: logic and cancel - <a href="patterns/buttons/flat/pattern.html" target="_blank" data-type="example">link</a></li>
+                                <li><span data-type="bold">Dialog layout.</span> Template with layout for our authorization window - <a href="patterns/login/pattern.html" target="_blank" data-type="example">link</a></li>
+                            </ul>
+                            <p data-type="label" data-size="middle" data-align="left">Popup</p>
+                            <p data-type="label" data-size="normal" data-align="left">As you can see, it’s just HTML file. There are no any special syntax or conditions of usage. You should just create simple HTML file. You can attach CSS files and JS files. All resource will be loaded with template by flex-patterns automatically and attached to page.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+    &lt;title&gt;Flex.Template&lt;/title&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;link rel="stylesheet" type="text/css" href="pattern.css" /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div data-style="Popup" id="{{id}}"&gt;
+        &lt;div data-style="Popup.Container"&gt;
+            &lt;div data-style="Popup.Title"&gt;
+                &lt;p data-style="Popup.Title"&gt;{{title}}&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div data-style="Popup.Content"&gt;{{content}}&lt;/div&gt;
+            &lt;div data-style="Popup.Bottom"&gt;
+                &lt;p data-style="Popup.Bottom"&gt;{{bottom}}&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple.Common">
+                        <p data-type="label" data-size="normal" data-align="left" data-highlight="orange">Using HTML-files as source of template allows you open your template as standalone page and debug it. It’s very effective way to correct styles or catch some bug. And sure, it’s really easy.</p>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="middle" data-align="left">Dialog layout</p>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s postpone HEAD and other places of HTML and paste only BODY tag to save place and your time.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;div data-type="Pattern.Login"&gt;
+    &lt;p&gt;Login&lt;/p&gt;
+    {{login}}
+    &lt;p&gt;Password&lt;/p&gt;
+    {{password}}
+    &lt;div data-type="Pattern.Controls"&gt;{{controls}}&lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="middle" data-align="left">Textbox</p>
+                            <p data-type="label" data-size="normal" data-align="left">As you can see value of <span data-type="code">INPUT</span> is assigned with paragraph. It means: if value of <span data-type="code">INPUT</span> will be changed, content of <span data-type="code">P</span> will be changed too. You will see it bellow.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;p&gt;{{::value}}&lt;/p&gt;
+&lt;div data-type="TextInput.Wrapper"&gt;
+    &lt;div data-type="TextInput.Container"&gt;
+        &lt;input data-type="TextInput" type="{{type}}" value="{{::value}}" name="TestInput" /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="middle" data-align="left">Button</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;a data-type="Buttons.Flat" id="{{id}}"&gt;{{title}}&lt;/a&gt;</pre>
+                    </div>
+
+                    <!--SECTION-->
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_5" data-type="title">Attaching template</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">You can attach template by two ways:</p>
+                            <ul data-type="list">
+                                <li>via JavaScript</li>
+                                <li>via HTML</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">To attach template via JavaScript you should to do this:</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">var id = flex.unique();
+_patterns.get({
+    url     : '/patterns/popup/pattern.html',
+    node    : document.body,
+    hooks   : {
+        id      : id,
+        title   : 'Test dialog window',
+        content : _patterns.get({
+            url     : '/patterns/patterns/login/pattern.html',
+            hooks   : {
+                login   : _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'text',
+                    }
+                }),
+                password: _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'password',
+                    }
+                }),
+                controls: _patterns.get({
+                    url     : '/patterns/buttons/flat/pattern.html',
+                    hooks   : [{ title: 'login', id: 'login_button' }, { title: 'cancel', id: 'cancel_button' }]
+                }),
+            }
+        })
+    },
+    callbacks: {
+        success: function (results) {
+            var instance    = this,
+                dom         = results.dom,
+                model       = results.model;
+            });
+        }
+    },
+}).render();</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Parameters of method <span data-type="code">get (_patterns.get(parameters))</span>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <table>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Obligatory</td>
+                                    <td>Type</td>
+                                    <td>Description</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">url</span></td>
+                                    <td>yes</td>
+                                    <td><span data-type="code">string</span></td>
+                                    <td>URL to HTML file of your template</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">node</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">node || string</span></td>
+                                    <td>If you define this property your template will be mounted into defined node. You can define this property as reference to some node or as selector. For example, you can define it as: document.body (reference to node) or as ‘body’ (selector).</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">replace</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">bool</span></td>
+                                    <td>Works only with property [node]. If it’s in true, your template will be mounted instead defined node.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">before</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">node || string</span></td>
+                                    <td>If you define this property your template will be mounted before defined node. You can define this property as reference to some node or as selector.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">after</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">node || string</span></td>
+                                    <td>If you define this property your template will be mounted after defined node. You can define this property as reference to some node or as selector.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">id</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">string</span></td>
+                                    <td>ID of your template.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">hooks</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">object || array</span></td>
+                                    <td>Collections of hooks.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">conditions</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">object</span></td>
+                                    <td>Collections of conditions.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">callbacks</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">object</span></td>
+                                    <td>You can define two callbacks.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">callbacks.success</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">function</span></td>
+                                    <td>This function will be called if rendering of your template was successful.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">callbacks.fail</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">function</span></td>
+                                    <td>This function will be called if rendering of your template was failed.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">resources</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">any</span></td>
+                                    <td>Property resources is used for exchanging of data between your application and controllers.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">remove_missing_hooks</span></td>
+                                    <td>no</td>
+                                    <td><span data-type="code">bool</span></td>
+                                    <td>If flex-patterns cannot file hook, mark of hook (<span data-type="code">{{name}}</span>) will be removed from markup. You can prevent such behavior by setting this property to false. </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Let’s see to hooks closer. As you can see names of properties of object hooks are same as were defined in HTML of templates. Just back to HTML of popup template and you will find there: <span data-type="code">{{content}}</span>, <span data-type="code">{{id}}</span> and other. </p>
+                            <p data-type="label" data-size="normal" data-align="left">So method <span data-type="code">_patterns.get()</span> will return instance of pattern’s class. To mount it according parameters and call defined callbacks you should call method <span data-type="code">render()</span>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple.Common">
+                        <p data-type="label" data-size="normal" data-align="left" data-highlight="orange">Flex-patterns works asynchrony, because it gets sources of your template (HTML, JS and CSS) within HTTP(s) requests. That’s why method <span data-type="code">render()</span> will not return any results of operation.</p>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Here you can see result of discovered example – <a href="examples/login.script.html" target="_blank" data-type="example">link</a>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple.Common">
+                        <p data-type="label" data-size="normal" data-align="left" data-highlight="orange">"From box" you will get such functionality like: dragging window, resize window, maximize and restore window and focus control. That’s why in example by <a href="examples/login.script.html" target="_blank" data-type="example">link</a> you can do it. Read about it below.</p>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">To attach template within HTML, you should define in your page next HTML fragment:</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;pattern src="/patterns/popup/pattern.html" style="display:none;"&gt;
+    &lt;id&gt;0&lt;/id&gt;
+    &lt;title&gt;Test dialog window&lt;/title&gt;
+    &lt;content src="/patterns/patterns/login/pattern.html"&gt;
+        &lt;login src="/patterns/controls/textinput/pattern.html"&gt;
+            &lt;type&gt;text&lt;/type&gt;
+        &lt;/login&gt;
+        &lt;password src="/patterns/controls/textinput/pattern.html"&gt;
+            &lt;type&gt;password&lt;/type&gt;
+        &lt;/password&gt;
+        &lt;controls src="/patterns/buttons/flat/pattern.html"&gt;
+            &lt;id&gt;login_button&lt;/id&gt;&lt;title&gt;login&lt;/title&gt;
+            &lt;id&gt;cancel_button&lt;/id&gt;&lt;title&gt;cancel&lt;/title&gt;
+        &lt;/controls&gt;
+    &lt;/content&gt;
+&lt;/pattern&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">You see tag <span data-type="code">PATTERN</span>. Attribute <span data-type="code">SRC</span> is used for definition of url of your template. Inside tag <span data-type="code">PATTERN</span> you will find other tags, like <span data-type="code">ID</span>, <span data-type="code">TITILE</span> and <span data-type="code">CONTENT</span> – it’s hooks. If hook consists other template you should just define attribute <span data-type="code">SRC</span>, like it is done for <span data-type="code">CONTENT</span> or <span data-type="code">LOGIN</span> and others.</p>
+                            <p data-type="label" data-size="normal" data-align="left">In this case you should not call any JavaScript code – flex-patterns automatically find template, build it and mount instead tag <span data-type="code">PATTERN</span>.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Also you can define callbacks via attributes of tag <span data-type="code">PATTERN</span>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;pattern src="/patterns/popup/pattern.html" style="display:none;" success="callback_success" error="callback_error"&gt;
+    ...
+&lt;/pattern&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">But in this case your template will not be rendered automatically to prevent situation, when callback functions aren’t ready (defined), but flex-pattern is ready to render. So, to render template from HTML with defined callbacks, you should do this (after your callback-functions will be ready):</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.layout();</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Let’s back again to our example <a href="examples/login.script.html" target="_blank" data-type="example">link</a>. If you type something in login field or password, you will see, that content is appeared ahead inputs. Just remember, how looks template of textbox: </p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;p&gt;{{::value}}&lt;/p&gt;
+&lt;div data-type="TextInput.Wrapper"&gt;
+    &lt;div data-type="TextInput.Container"&gt;
+        &lt;input data-type="TextInput" type="{{type}}" value="{{::value}}" name="TestInput" /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">It happens, because we bind value of <span data-type="code">INPUT</span> and paragraph ahead of <span data-type="code">INPUT</span>. Also you have access and to value of <span data-type="code">INPUT</span> and to <span data-type="code">P</span> of paragraph via model, but about it will be below. </p>
+                        </div>
+                    </div>
+                    <!--SECTION-->
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_6" data-type="title">Multiply values</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">To repeat some template within different data several times you should define value of hook as an array of values. Let’s see how it works on an example of table. We will need two templates.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Template of table</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;table data-type="Demo.Table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;{{titles.column_0}}&lt;/th&gt;
+        &lt;th&gt;{{titles.column_1}}&lt;/th&gt;
+        &lt;th&gt;{{titles.column_2}}&lt;/th&gt;
+        &lt;th&gt;{{titles.column_3}}&lt;/th&gt;
+    &lt;/tr&gt;
+    {{rows}}
+&lt;/table&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">And template of row.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;tr&gt;
+    &lt;td&gt;{{column_0}}&lt;/td&gt;
+    &lt;td&gt;{{column_1}}&lt;/td&gt;
+    &lt;td&gt;{{column_2}}&lt;/td&gt;
+    &lt;td&gt;{{column_3}}&lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Let’s render our table. Here is an example of this template – <a href="examples/table.html" target="_blank" data-type="example">link</a>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">var data_source = [];
+for (var i = 0; i < 100; i += 1) {
+    data_source.push({
+        column_0: (Math.random() * 1000).toFixed(4),
+        column_1: (Math.random() * 1000).toFixed(4),
+        column_2: (Math.random() * 1000).toFixed(4),
+        column_3: (Math.random() * 1000).toFixed(4),
+    });
+}
+_patterns.get({
+    url: '/patterns/table/container/pattern.html',
+    node: document.body,
+    hooks: {
+        titles: {
+            column_0: 'Column #0',
+            column_1: 'Column #1',
+            column_2: 'Column #2',
+            column_3: 'Column #3',
+        },
+        rows: _patterns.get({
+            url: '/patterns/table/row/pattern.html',
+            hooks: data_source,
+        })
+    }
+}).render();</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Pay your attention, that we can define name of hook as a chain of properties – <span data-type="code">titles.column_x</span>. It allows us to use an understandable structure of a hook’s object and group properties by their meaning.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Also, you have seen, that in previous example (authorization window) we used multiple values for buttons, but pay your attention, in case of JavaScript attaching to define multiply value of hook we used an array to define several instances of template:</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">controls: _patterns.get({
+    url     : '/patterns/buttons/flat/pattern.html',
+    hooks   : [
+        { title: 'login', id: 'login_button' }, 
+        { title: 'cancel', id: 'cancel_button' }
+    ]
+})</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">But in HTML to do same we have to define hooks just several times:</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;controls src="/patterns/buttons/flat/pattern.html"&gt;
+    &lt;id&gt;login_button&lt;/id&gt;&lt;title&gt;login&lt;/title&gt;
+    &lt;id&gt;cancel_button&lt;/id&gt;&lt;title&gt;cancel&lt;/title&gt;
+&lt;/controls&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_7" data-type="title">Controllers and callbacks</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">Controller and callback (success case) are absolutely same things. It’s a function, which called after render is finished and template is mounted. Let’s see on it.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">/*Example of callback (success case) */
+_patterns.get({
+    url     : 'some_url',
+    callbacks: {
+        success: function (results) {
+            var instance    = this,
+                dom         = results.dom,
+                model       = results.model,
+                binds       = results.binds,
+                map         = results.map,
+                resources   = results.resources;
+            ...
+            }
+    },
+}).render();
+
+/*Example of controller */
+_controller(function (results) {
+    var instance    = this,
+        dom         = results.dom,
+        model       = results.model,
+        binds       = results.binds,
+        map         = results.map,
+        resources   = results.resources;
+    ...
+    });
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see controller and callback are equal. You can define callback during rendering template. To create a controller, you should create JS-file and place inside a definition of controller (like in example before). </p>
+                            <p data-type="label" data-size="normal" data-align="left">If you want create a controller for our popup window (previous example of authorization popup), you should add only link to JS-file with controller.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+    &lt;title&gt;Flex.Template&lt;/title&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;link rel="stylesheet" type="text/css" href="pattern.css" /&gt;
+
+    &lt;!-- Attach controller of template --&gt;
+    &lt;script type="text/javascript" src="conroller.js"&gt;&lt;/script&gt;
+
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div data-style="Popup"&gt;
+        &lt;div data-style="Popup.Container"&gt;
+            &lt;div data-style="Popup.Title"&gt;
+                &lt;p data-style="Popup.Title"&gt;{{title}}&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div data-style="Popup.Content"&gt;{{content}}&lt;/div&gt;
+            &lt;div data-style="Popup.Bottom"&gt;
+                &lt;p data-style="Popup.Bottom"&gt;{{bottom}}&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Now let’s see closer on object results, there are many important things inside.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_8" data-type="title">Models and binds</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s again see on argument of callback / controller function.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">function (results) {
+    var instance    = this,
+        dom         = results.dom,
+        model       = results.model,
+        binds       = results.binds,
+        map         = results.map,
+        resources   = results.resources;
+    ...
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see a results-object has two properties (which are interesting for us at current moment): model and binds.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Everything, what will be marked by you in HTML of your template by model-mark <span data-type="code">{{::name}}</span> will be in model and binds. Let’s back to our example of table and change a bit template of row.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;tr&gt;
+    &lt;td style="background:{{::background_0}};"&gt;{{::column_0}}&lt;/td&gt;
+    &lt;td style="background:{{::background_1}};"&gt;{{::column_1}}&lt;/td&gt;
+    &lt;td style="background:{{::background_2}};"&gt;{{::column_2}}&lt;/td&gt;
+    &lt;td style="background:{{::background_3}};"&gt;{{::column_3}}&lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see we have added model-references to each cell (<span data-type="code">{{::column_x}}</span> and style of each cell (<span data-type="code">{{::background_x}}</span>). Also, pay your attention, in cases, when we do not need hook, because we have model reference, we should not define hook (<span data-type="code">{{hook}}</span>) in layout of template. Now in callback or controller we have direct access to it. You can try this example by this <a href="examples/table.shake.html" target="_blank" data-type="example">link</a>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.get({
+    url: '/patterns/table/container/pattern.html',
+    node: document.body,
+    hooks: {
+        titles: {
+            column_0: 'Column #0',
+            column_1: 'Column #1',
+            column_2: 'Column #2',
+            column_3: 'Column #3',
+        },
+        rows: _patterns.get({
+            url: '/patterns/table/row_con/pattern.html',
+            hooks: data_source,
+        })
+    },
+    callbacks: {
+        success: function (results) {
+            (function (model) {
+                var fun = function () {
+                    var r = Math.round(19 * Math.random()),
+                        c = Math.round(3 * Math.random());
+                    model.__rows__[r]['column_' + c] = (Math.random() * 1000).toFixed(4);
+                    model.__rows__[r]['background_' + c] = 'rgb(' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ')';
+                    setTimeout(fun, Math.ceil(50 * Math.random()));
+                };
+                fun();
+            }(results.model));
+        }
+    }
+}).render();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Pay you attention on property of model <span data-type="code">__rows__</span>, by this way you can find all sub-models. In our example of login-window we have model-reference in template of textbox.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;p&gt;{{::value}}&lt;/p&gt;
+&lt;div data-type="TextInput.Wrapper"&gt;
+    &lt;div data-type="TextInput.Container"&gt;
+        &lt;input data-type="TextInput" type="{{type}}" value="{{::value}}" name="TestInput" /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">We can get access to this model-reference in callback.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.get({
+    url: '/patterns/popup/pattern.html',
+    node: document.body,
+    hooks: {
+        id: id,
+        title: 'Test dialog window',
+        content: _patterns.get({
+            url: '/patterns/patterns/login/pattern.html',
+            hooks: {
+                login: _patterns.get({
+                    url: '/patterns/controls/textinput/pattern.html',
+                    hooks: {
+                        type: 'text',
+                    }
+                }),
+                password: _patterns.get({
+                    url: '/patterns/controls/textinput/pattern.html',
+                    hooks: {
+                        type: 'password',
+                    }
+                }),
+                controls: _patterns.get({
+                    url: '/patterns/buttons/flat/pattern.html',
+                    hooks: [{ title: 'login', id: 'login_button' }, { title: 'cancel', id: 'cancel_button' }]
+                }),
+            }
+        })
+    },
+    callbacks: {
+        success: function (results) {
+            var instance = this,
+                model = results.model;
+            model.__content__.__login__.value = 'this new login';
+        }
+    },
+}).render();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">So, by <span data-type="code">__property__</span> you can repeat nesting in hooks.</p>
+                            <p data-type="label" data-size="normal" data-align="left">If <span data-type="code">model</span> allows you change values of assigned properties (or attributes), <span data-type="code">binds</span> allows you attach your handle (for change event), or remove it.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">success: function (results) {
+    var instance    = this,
+        dom         = results.dom,
+        binds       = results.binds,
+        id          = null;
+    //Add handle
+    id = binds.__content__.__login__.value.addHandle(function (name, value) {
+        var obj = this;
+    });
+    //Remove handle
+    binds.__content__.__login__.value.removeHandle(id);
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see structure of binds-object is absolutely same as model-object has. You have two methods:</p>
+                            <ul data-type="list">
+                                <li>addHandle</li>
+                                <li>removeHandle</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">Object <span data-type="code">this</span> can be different. For example, if model-reference assigned with attribute or property of node – it will be reference to node. If model-reference assigned with style property – it will be style-object of node.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_9" data-type="title">DOM and map</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">Other two important objects in callback / controller is: collection of nodes (object – dom) and map of template (object – map).</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">function (results) {
+    var instance    = this,
+        dom         = results.dom,
+        model       = results.model,
+        binds       = results.binds,
+        map         = results.map,
+        resources   = results.resources;
+    ...
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Map – is a map of all root-nodes, which was created by scheme of hooks. Each segment of map has property <span data-type="code">__context</span> – this is an instance of MAP class and it gives you only one method – <span data-type="code">select(selector)</span>, which you can use to quickly find some node inside your template.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">success: function (results) {
+    var instance    = this,
+        map         = results.map,
+        nodes       = null;
+    //Will find all P in whole pupup
+    nodes = map.__context.select('p');
+    //Will find all P inside popup in content area
+    nodes = map.content.__context.select('p');
+    //Will find all P in textbox-control of login
+    nodes = map.content.login.__context.select('p');
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">You can use map-object to make searching of nodes faster and effective.</p>
+                            <p data-type="label" data-size="normal" data-align="left">If map-object is generated automatically for your template always, dom-object is generated only if you had marked some nodes by this <span data-type="code">{{$name}}</span>. Let’s change a bit template of button and add reference to dom.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;a data-type="Buttons.Flat" id="{{id}}" {{$button}}&gt;{{title}}&lt;/a&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple.Common">
+                        <p data-type="label" data-size="normal" data-align="left" data-highlight="orange">Pay your attention, reference <span data-type="code">{{$name}}</span> should be added into attributes area of target node.</p>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Now we can change a bit callback / controller of popup window.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">success: function (results) {
+    var instance    = this,
+        dom         = results.dom;
+    dom.listed.__content__.__controls__[0].button.on('click', function () {
+        alert('You cannot login. It\'s just test. Login is "' + model.__content__.__login__.value + '", and password is "' + model.__content__.__password__.value + '"');
+    });
+    dom.listed.__content__.__controls__[1].button.on('click', function () {
+        alert('Do not close me, please.');
+    });
+    dom.grouped.__content__.__controls__.button.on('click', function () {
+        alert('This is common handle for both buttons');
+    });
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">First of all, pay your attention, that dom-object has two lists: <span data-type="code">listed</span> and <span data-type="code">grouped</span>. We have two buttons in our template. In <span data-type="code">listed</span> it will be represented as Array and you can get access to each button; but in <span data-type="code">grouped</span> you will get access to both buttons in one time. So, what do use – depends only on your purposes. </p>
+                            <p data-type="label" data-size="normal" data-align="left">You can try this example by this <a href="examples/login.script.dom.html" target="_blank" data-type="example">link</a>. As you can see, we attached event-handles and now by clicking on buttons, we see alerts. </p>
+                            <p data-type="label" data-size="normal" data-align="left">A final dom-object is an instance of DOM-class, which has next methods.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <table>
+                                <tr>
+                                    <td>Method</td>
+                                    <td>Description</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">add(nodeList [NodeList])</span></td>
+                                    <td>Add nodes into collection. All methods will be done for all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">css(css [object])</span></td>
+                                    <td>Change styles of all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">addClass(className [string])</span></td>
+                                    <td>Add CSS-class to all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">removeClass(className [string])</span></td>
+                                    <td>Remove CSS-class from all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">show()</span></td>
+                                    <td>Show all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">hide()</span></td>
+                                    <td>Hide all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">remove()</span></td>
+                                    <td>Remove from page all nodes in collection. Pay your attention, collection will be cleared too.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">append(parent [node])</span></td>
+                                    <td>Append all nodes from collection to target node.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">insertBefore(parent [node], before [node])</span></td>
+                                    <td>Insert before defined node all nodes from collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">attr(name [string], value [string])</span></td>
+                                    <td>Get or set defined attribute to all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">removeAttr(name [string])</span></td>
+                                    <td>Remove defined attribute from all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">on(event [string], handle [function])</span></td>
+                                    <td>Attach event-handle to all nodes in collection.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">getAsArray()</span></td>
+                                    <td>Return collection of all nodes as Array.</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">You can add your own functionality. Let’s create method, which add background to all nodes in collection.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.classes.NODE_LIST.addMethod('setBackground', function (bg) {
+    Array.prototype.forEach.call(this.collections, function (collection) {
+        Array.prototype.forEach.call(collection, function (node) {
+            node.style.background = bg;
+        });
+    });
+});
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Now you can call your method for any element in dom-object.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">success: function (results) {
+    var instance    = this,
+        dom         = results.dom;
+    dom.grouped.__content__.__controls__.button.setBackground('rgb(0,200,0)');
+}
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_10" data-type="title">Resources / exchanging of data</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">And last object in callback / controller is resources. Let’s see on next example, and everything will be clear.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.get({
+    url     : '/patterns/popup/pattern.html',
+    node    : document.body,
+    hooks   : {
+        id      : id,
+        title   : 'Test dialog window',
+        content : _patterns.get({
+            url     : '/patterns/login/pattern.html',
+            hooks   : {
+                login   : _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'text',
+                    }
+                }),
+                password: _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'password',
+                    }
+                }),
+                controls: _patterns.get({
+                    url     : '/patterns/buttons/flat/pattern.html',
+                    hooks   : [{ title: 'login', id: 'login_button' }, { title: 'cancel', id: 'cancel_button' }]
+                }),
+            },
+        })
+    },
+    resources: {
+        field   : 'one',
+        field2  : 'two'
+    },
+    callbacks: {
+        success: function (results) {
+            var instance    = this,
+                resources   = results.resources;
+            window.console.log(resources.field);
+            window.console.log(resources.field2);
+            
+            //Result in console:
+            //one
+            //two
+        }
+    },
+}).render();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see, resources it’s just object, which was defined during rendering of template. You can use this object to exchange data between your application and template’s callback.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_11" data-type="title">Conditions</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">In most cases we need more specific situation with template, which should be changed according data (hooks). For example, if we have our textbox is used for password – will be cool show some message to user with information about allowed symbols.  </p>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s back to our example of authorization dialog and change a bit template of textbox.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+    &lt;title&gt;Flex.Template&lt;/title&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;link rel="stylesheet" type="text/css" href="pattern.css" /&gt;
+    &lt;!--Attach JS file with condition-handle--&gt;
+    &lt;script type="text/javascript" src="conditions.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;p&gt;{{::value}}&lt;/p&gt;
+    &lt;div data-type="TextInput.Wrapper"&gt;
+        &lt;div data-type="TextInput.Container"&gt;
+            &lt;input data-type="TextInput" type="{{type}}" value="{{::value}}" name="TestInput" {{$input}} /&gt;
+        &lt;/div&gt;
+        &lt;!--type=password--&gt;
+        &lt;div data-type="TextInput.Info.Icon"&gt;&lt;/div&gt;
+        &lt;div data-type="TextInput.Info.Popup"&gt;
+            &lt;p&gt;You can use in password only letters, number and _&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;!--type--&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see we added new block of HTML-code. Format of condition is very easy: you define in HTML-comment name and value of condition, and close condition by name of it in HTML-comment. </p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;!--[condition_name]=[condition_value]--&gt;
+&lt;div data-type="TextInput.Info.Icon"&gt;&lt;/div&gt;
+&lt;div data-type="TextInput.Info.Popup"&gt;
+    &lt;p&gt;You can use in password only letters, number and _&lt;/p&gt;
+&lt;/div&gt;
+&lt;!--[condition_name]--&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Next step – create a condition handle. Pay your attention, we have attached file "condition.js" to our template. Inside this file we have:</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_conditions({
+    type: function (data) {
+        return data.type;
+    }
+});
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Let’s discover this code:</p>
+                            <ul data-type="list">
+                                <li>Function <span data-type="code">_conditions</span> is used to define conditions for template (where JS file was attached)</li>
+                                <li>Function <span data-type="code">_conditions</span> can have only one parameter – object with description of conditions.</li>
+                                <li>Name of condition should be same as in HTML of template was defined. As you can see here we see condition "type" and same in HTML. </li>
+                                <li>Condition-function (in our case "type") will get from flex.patterns one parameter – data. Data is an object with values of defined hooks. Our template has only one hook – "type". So, object data will have only one property "type". In condition function we just return it and that’s all.</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">How it works? During rendering, flex-patterns will find in HTML conditions, detect their names and will try to find condition-functions. If function is found, flex-patterns executes it within actual data to get result of it. And last step, flex-patterns will try to find condition for gotten result and will leave part of HTML code, which was defined for gotten value of condition. All not-actual conditions will be just removed from result.</p>
+                            <p data-type="label" data-size="normal" data-align="left">So, if condition value will be "password" our template will add into layout addition HTML-code and we will see popup, like you can see by this <a href="examples/login.layout.conditions.html" target="_blank" data-type="example">link</a>.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s modify other our example, example of table and to template of row a several conditions.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;tr&gt;
+    &lt;td&gt;{{::column_0}}&lt;/td&gt;
+    &lt;td&gt;{{::column_1}}&lt;/td&gt;
+    &lt;td&gt;{{::column_2}}&lt;/td&gt;
+    &lt;td&gt;
+        &lt;div&gt;
+            &lt;p&gt;{{::column_3}}&lt;/p&gt;
+            &lt;!--value_sets=0--&gt;
+                &lt;!--sub_value_sets=0--&gt;
+                &lt;p&gt;This value is less than 111&lt;/p&gt;
+                &lt;!--sub_value_sets--&gt;
+                &lt;!--sub_value_sets=0.5--&gt;
+                &lt;p&gt;This value is more than 111 and less than 222&lt;/p&gt;
+                &lt;!--sub_value_sets--&gt;
+                &lt;!--sub_value_sets=1--&gt;
+                &lt;p&gt;This value is more than 222 and less than 333&lt;/p&gt;
+                &lt;!--sub_value_sets--&gt;
+            &lt;!--value_sets--&gt;
+            &lt;!--value_sets=0.5--&gt;
+            &lt;p&gt;This value is more than 333 and less than 666&lt;/p&gt;
+            &lt;!--value_sets--&gt;
+            &lt;!--value_sets=1--&gt;
+            &lt;p&gt;This value is more than 666 and less than 1000&lt;/p&gt;
+            &lt;!--value_sets--&gt;
+        &lt;/div&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see we’ve created two conditions (<span data-type="code">value_sets</span>, <span data-type="code">sub_values_sets</span>) with three possible values for each of them. Let’s create file with conditions. And do not forget to attach it to template.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_conditions({
+    value_sets: function (data) {
+        if (data.column_3 <= 333                        ) { return '0';     }
+        if (data.column_3 > 333 && data.column_3 <= 666 ) { return '0.5';   }
+        if (data.column_3 > 666                         ) { return '1';     }
+    },
+    sub_value_sets: function (data) {
+        if (data.column_3 <= 111                        ) { return '0';     }
+        if (data.column_3 > 111 && data.column_3 <= 222 ) { return '0.5';   }
+        if (data.column_3 > 222                         ) { return '1';     }
+    },
+});
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">So, now before render each row, flex.patterns will check two conditions and, according its values, build final HTML. You can see, how it looks by this <a href="examples/table.conditions.static.html" target="_blank" data-type="example">link</a>.</p>
+                            <p data-type="label" data-size="normal" data-align="left">You can ask: why flex.patterns uses such way (via condition-function) instead popular method, when some syntax is used inside template. For example, like EJS-templates.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;ul&gt;
+    &lt;% for(var i=0; i
+    &lt;supplies.length; i++) {%&gt;
+        &lt;li&gt;&lt;%= supplies[i] %&gt;&lt;/li&gt;
+        &lt;% } %&gt;
+&lt;/ul&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">We have several answers on such question. </p>
+                            <ul data-type="list">
+                                <li>Any not-standard syntax quite hard debug. At least you cannot just put somewhere break-point using standard tools of browser. </li>
+                                <li>You cannot simply open your template as standalone page.  </li>
+                                <li>Templates with not-standard syntax much harder "move" from project to project, because it depend on template-engine.</li>
+                                <li>And last reason – such templates cannot be updated in run-time.</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s stay on last point a bit longer. Flex-template can be updated in run-time mode. To see, that does it mean, take a look on next example. We will update our conditions for row.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">var conditions = {
+    value_sets: function (data) {
+        if (data.column_3 <= 333                        ) { return '0';     }
+        if (data.column_3 > 333 && data.column_3 <= 666 ) { return '0.5';   }
+        if (data.column_3 > 666                         ) { return '1';     }
+    },
+    sub_value_sets: function (data) {
+        if (data.column_3 <= 111                        ) { return '0';     }
+        if (data.column_3 > 111 && data.column_3 <= 222 ) { return '0.5';   }
+        if (data.column_3 > 222                         ) { return '1';     }
+    },
+};
+conditions.value_sets.      tracking = ['column_3'];
+conditions.sub_value_sets.  tracking = ['column_0'];
+_conditions(conditions);</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As can you see, we’ve added property <span data-type="code">tracking</span> to each condition-functions. It means, that if value of model-reference <span data-type="code">column_3</span> will be changed, condition-function <span data-type="code">value_sets</span> will be recalculated and whole template will be build (without losing any event-handles, binds and etc.). And if model-reference <span data-type="code">column_0</span>, condition-function <span data-type="code">sub_value_sets</span> will be recalculated too.</p>
+                            <p data-type="label" data-size="normal" data-align="left">So, let’s modify callback of render our table to see results.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">var data_source = [];
+for (var i = 0; i < 20; i += 1) {
+    data_source.push({
+        column_0: (Math.random() * 1000).toFixed(4),
+        column_1: (Math.random() * 1000).toFixed(4),
+        column_2: (Math.random() * 1000).toFixed(4),
+        column_3: (Math.random() * 1000).toFixed(4),
+    });
+}
+_patterns.get({
+    url: '/patterns/table/container/pattern.html',
+    node: document.body,
+    hooks: {
+        titles: {
+            column_0: 'Column #0',
+            column_1: 'Column #1',
+            column_2: 'Column #2',
+            column_3: 'Column #3',
+        },
+        rows: _patterns.get({
+            url: '/patterns/table/row_con/pattern.html',
+            hooks: data_source,
+        })
+    },
+    callbacks: {
+        success: function (results) {
+            (function (model) {
+                var fun = function () {
+                    var r = Math.round(19 * Math.random()),
+                        c = Math.round(3 * Math.random());
+                    model.__rows__[r]['column_' + c] = (Math.random() * 1000).toFixed(4);
+                    setTimeout(fun, Math.ceil(50 * Math.random()));
+                };
+                fun();
+            }(results.model));
+        }
+    }
+}).render();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">You can see results by this <a href="examples/table.conditions.dynamic.html" target="_blank" data-type="example">link</a>. As you see, content of last column is changed each time, when value of model-reference is changed. </p>
+                            <p data-type="label" data-size="normal" data-align="left">So, such way of definition of conditions allows you modify your template dynamically and do not loss such data like event-handles or binds, or something similar.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Notice, you can define condition-functions in JS-file with template or you can define it during render of template (in such case it will have higher priority).</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.get({
+    url: '/patterns/table/container/pattern.html',
+    node: document.body,
+    hooks: {
+        titles: {
+            column_0: 'Column #0',
+            column_1: 'Column #1',
+            column_2: 'Column #2',
+            column_3: 'Column #3',
+        },
+        rows: _patterns.get({
+            url: '/patterns/table/row_con/pattern.html',
+            hooks: data_source,
+        })
+    },
+    conditions : {
+        value_sets: function (data) {
+            if (data.column_3 <= 333                        ) { return '0';     }
+            if (data.column_3 > 333 && data.column_3 <= 666 ) { return '0.5';   }
+            if (data.column_3 > 666                         ) { return '1';     }
+        },
+        sub_value_sets: function (data) {
+            if (data.column_3 <= 111                        ) { return '0';     }
+            if (data.column_3 > 111 && data.column_3 <= 222 ) { return '0.5';   }
+            if (data.column_3 > 222                         ) { return '1';     }
+        }
+    },
+    callbacks: {
+        success: function (results) {
+        }
+    }
+}).render();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_12" data-type="title">Settings and cache</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">All your templates will be cached (within <span data-type="code">localStorage</span>) include all resource like CSS and JS files. To prevent such behavior, you can turn on debug mode (all resource will be taken from server).</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.debug();</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Or you can change settings of flex.patterns.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.setup({
+    USE_STORAGE_CSS : false,
+    USE_STORAGE_JS  : false,
+    USE_STORAGE_HTML: false
+});
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Here is a full list of available settings.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <table>
+                                <tr>
+                                    <td>Setting</td>
+                                    <td>Default</td>
+                                    <td>Description</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">USE_STORAGE_CSS</span></td>
+                                    <td><span data-type="code">true</span></td>
+                                    <td>Cache or not CSS files</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">USE_STORAGE_JS</span></td>
+                                    <td><span data-type="code">true</span></td>
+                                    <td>Cache or not JS files</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">USE_STORAGE_HTML</span></td>
+                                    <td><span data-type="code">true</span></td>
+                                    <td>Cache or not HTML files</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">PATTERN_NODE</span></td>
+                                    <td><span data-type="code">PATTERN</span></td>
+                                    <td>Name of tag, which is used to define template in HTML of page.</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_13" data-type="title">Preloading</a> </p>
+                            <p data-type="label" data-size="normal" data-align="left">In some cases, developer need preload templates before render. In this case time for request will be used during preload procedure, but render will be done quickly. </p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">_patterns.preload(
+    //List of template
+    [
+        '/patterns/popup/pattern.html',
+        '/patterns/login/pattern.html',
+        '/patterns/controls/textinput/pattern.html',
+        '/patterns/buttons/flat/pattern.html'
+    ],
+    //Success handle
+    function(){
+    },
+    //Fail handle
+    function(){
+    }
+);
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_14" data-type="title">Cloning</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">After template was rendered, you have possibility clone it – create addition instance of template. Let’s update callback for authorization window and add procedure of creating clone by click on button.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">    url     : '/patterns/popup/pattern.html',
+    node    : document.body,
+    hooks   : {
+        id      : id,
+        title   : 'Test dialog window',
+        content : _patterns.get({
+            url     : '/patterns/login/pattern.html',
+            hooks   : {
+                login   : _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'text',
+                    }
+                }),
+                password: _patterns.get({
+                    url     : '/patterns/controls/textinput/pattern.html',
+                    hooks   : {
+                        type: 'password',
+                    }
+                }),
+                controls: _patterns.get({
+                    url     : '/patterns/buttons/flat/pattern.html',
+                    hooks   : [{ title: 'login', id: 'login_button' }, { title: 'cancel', id: 'cancel_button' }]
+                }),
+            },
+        })
+    },
+    callbacks: {
+        success: function (results) {
+            var instance    = this,
+                dom         = results.dom,
+                model       = results.model;
+            //Attach event to buttons
+            dom.listed.__content__.__controls__[0].button.on('click', function () {
+                alert('You cannot login. It\'s just test. Login is "' + model.__content__.__login__.value + '", and password is "' + model.__content__.__password__.value + '"');
+            });
+            dom.listed.__content__.__controls__[1].button.on('click', function () {
+                var id      = flex.unique(),
+                    clone   = instance.clone({
+                        id      : id,
+                        title   : 'Clonned dialog window',
+                        content : {
+                            login   : {
+                                type: 'text',
+                            },
+                            password: {
+                                type: 'password',
+                            },
+                            controls: [{ title: 'login', id: 'login_button' }, { title: 'cancel', id: 'cancel_button' }],
+                        }
+                });
+                document.body.appendChild(clone[0]);
+                flex.libraries.ui.window.focus.     init();
+                flex.libraries.ui.window.move.      init();
+                flex.libraries.ui.window.maximize.  init();
+                flex.libraries.ui.window.resize.    init();
+            });
+        }
+    },
+}).render();</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Pay your attention to method <span data-type="code">instance.clone</span>. Because template was rendered before and is ready for usage, we define only values of hooks, without data about urls, conditions and etc.</p>
+                            <p data-type="label" data-size="normal" data-align="left">Method <span data-type="code">clone</span> will not mount clone of template, but returns collection of template’s nodes, which should be attached to necessary place by developer.</p>
+                            <p data-type="label" data-size="normal" data-align="left">You can try this example by this <a href="examples/login.script.html" target="_blank" data-type="example">link</a>. Just click on "cancel" button to create clone of template.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_15" data-type="title">From box</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">In addition to basic functionality (as template engine) flex.patterns gives you several very useful and powerful features. </p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="middle" data-align="left">Dialogs / windows UI</p>
+                            <p data-type="label" data-size="normal" data-align="left">Flex.templates has inbuilt controllers for:</p>
+                            <ul data-type="list">
+                                <li>Drag windows (nodes);</li>
+                                <li>Change size of windows;</li>
+                                <li>Maximize / restore size of windows;</li>
+                                <li>Control focus of window.</li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">Let’s see again on template of our popup.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">&lt;div data-style="Popup" data-flex-ui-window-move-container="{{id}}" data-flex-ui-window-resize-position-parent="{{id}}" data-flex-ui-window-focus="{{id}}"&gt;
+    &lt;div data-style="Popup.Container" data-flex-ui-window-resize-container="{{id}}" data-flex-ui-window-maximize="{{id}}"&gt;
+        &lt;div data-style="Popup.Title" data-flex-ui-window-move-hook="{{id}}"&gt;
+            &lt;p data-style="Popup.Title"&gt;{{title}}&lt;/p&gt;
+            &lt;div data-style="Popup.Title.Switcher" data-state="max" data-flex-window-maximize-hook="{{id}}"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div data-style="Popup.Content"&gt;{{content}}&lt;/div&gt;
+        &lt;div data-style="Popup.Bottom"&gt;
+            &lt;p data-style="Popup.Bottom" id="test_bottom_id"&gt;{{bottom}}{{::bottom}}&lt;/p&gt;
+            &lt;div data-style="Window.Resize.Coner"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">You see there several not-standard attributes. Within such attributes you can setup necessary UI.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <table>
+                                <tr>
+                                    <td>Attribute</td>
+                                    <td>Description</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-move-container</span></td>
+                                    <td>Node, which will be dragging </td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-move-hook</span></td>
+                                    <td>Node, which is used as hook for dragging. By click on this node user can drag window</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-resize-container</span></td>
+                                    <td>Node, which will be resizing</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-resize-position-parent</span></td>
+                                    <td>Node, which is needed for correction of position of resizing node. In most cases this attribute can be postponed, but if you are using quite hard nesting, it can be useful to define normal behavior during resize.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-focus</span></td>
+                                    <td>Node, which should be placed ahead all other nodes if it’s focused. By this attribute, we are defining node, whose property <span data-type="code">z-index</span> will be changed</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-ui-window-maximize</span></td>
+                                    <td>Node, which will be maximized / restored</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">data-flex-window-maximize-hook</span></td>
+                                    <td>Node, which is used as button to maximize / restore window</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">During rendering of template these UIs will be applied automatically. But you can do it manually (for example for cases with cloning of templates) by calling init-functions.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">//Focus controller
+flex.libraries.ui.window.focus.     init();
+//Dragging controller
+flex.libraries.ui.window.move.      init();
+//Maximize / restore controller
+flex.libraries.ui.window.maximize.  init();
+//Resize controller
+flex.libraries.ui.window.resize.    init();
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="middle" data-align="left">Accessors</p>
+                            <p data-type="label" data-size="normal" data-align="left">Flex.patterns is built based on flex. It gives developer several short accessors. </p>
+                            <ul data-type="list">
+                                <li><span data-type="code">_node(string || node, useCache [default: false], context [default: document])</span></li>
+                                <li><span data-type="code">_nodes(string || array[node] , useCache [default: false], context [default: document])</span></li>
+                                <li><span data-type="code">_object(object)</span></li>
+                                <li><span data-type="code">_array(object)</span></li>
+                                <li><span data-type="code">_string(string)</span></li>
+                            </ul>
+                            <p data-type="label" data-size="normal" data-align="left">As you’ve guessed, such wrappers open access to some functionality. Let’s discover default functionality (from box).</p>
+                            <p data-type="label" data-size="normal" data-align="left">All methods for <span data-type="code">_node</span> are actual and for <span data-type="code">_nodes</span>.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <table>
+                                <tr>
+                                    <td>Caller</td>
+                                    <td>Returing</td>
+                                    <td>Description</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">_node and _nodes wrappers</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">Html module. For work with DOM</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().size().get()</span></td>
+                                    <td rowspan="4"><span data-type="code">{ height: number, width: number } </span></td>
+                                    <td rowspan="4">Collection of methods, which calculate size of node by different ways. Method <span data-type="code">get()</span> is universal. Other methods can be useful in specific situations.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().size().getWithMargin()</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().size().getByClientRectSize()</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().size().getByOffset()</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().position().byPage()</span></td>
+                                    <td rowspan="2"><span data-type="code">{ top: number, left: number }</span></td>
+                                    <td rowspan="2">These methods calculate position of node on the page.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().position().byWindow()</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().styles().apply(styles)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Applies styles to defined node</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().styles().redraw()</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Force redrawing of node on the page</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().styles().addClass(className)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Add CSS class to node</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().styles().removeClass(className)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove CSS class from node</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().find().childByAttr(node_name, attribute)</span></td>
+                                    <td><span data-type="code">node</span></td>
+                                    <td>Find child of defined node with defined attribute. Parameters attribute is an object:
+{ name: string, value : any}
+</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().find().childByType(node_name)</span></td>
+                                    <td><span data-type="code">node</span></td>
+                                    <td>Find child of defined node with defined type.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().find().parentByAttr(attribute)</span></td>
+                                    <td><span data-type="code">node</span></td>
+                                    <td>Find parent of defined node with defined attribute. Parameters attribute is an object:
+{ name: string, value : any}
+</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).html().scroll().position()</span></td>
+                                    <td><span data-type="code">{
+top: number,
+left: number,
+height: number,
+width: number
+}
+</span></td>
+                                    <td>Calculate parameters of scroll for defined node</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">Binds module. Controls bindings functionality</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingAttrs().bind(attr, handle)</span></td>
+                                    <td><span data-type="code">id</span></td>
+                                    <td>Binds attribute with handle</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingAttrs().unbind(attr, id)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove handle for defined attribute by ID</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingAttrs().kill(attr)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove all handle for defined attribute</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingProps().bind(prop, handle)</span></td>
+                                    <td><span data-type="code">id</span></td>
+                                    <td>Binds property with handle</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingProps().unbind(prop, id)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove handle for defined property by ID</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).bindingProps().kill(prop)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove all handle for defined property</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">Events module. Extended controller of events</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p><span data-type="code">_node(sel).events().add(type, handle)</span></p>
+                                        <p><span data-type="code">_node(sel).events().add(type, handle, id)</span></p>
+                                        <p><span data-type="code">_node(sel).events().add(type, handle, id, touch)</span></p>
+                                    </td>
+                                    <td><span data-type="code">id</span></td>
+                                    <td>Attach handle to defined type of event. Parameters type and handle are obligatory. Parameters id and touch can be postponed. If <span data-type="code">touch = true</span> will be attached analogue events for touch-devices. </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p><span data-type="code">_node(sel).events().remove(type, handle)</span></p>
+                                        <p><span data-type="code">_node(sel).events().remove(type, null, id)</span></p>
+                                    </td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove handle by id or by handle. </td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_node(sel).events().call(type)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Fires defined event for defined node</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">_object wrapper</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).forEach(function(key, value){ })</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Applies callback to each property of defined object</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p><span data-type="code">_object(obj).extend()</span></p>
+                                        <p><span data-type="code">_object(obj).extend(target)</span></p>
+                                        <p><span data-type="code">_object(obj).extend(target, exclusion)</span></p>
+                                    </td>
+                                    <td><span data-type="code">object</span></td>
+                                    <td>Copies all properties of defined object to target object (if it’s defined). If in array <span data-type="code">exclusion</span> is defined some names of properties, such properties will be postponed</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p><span data-type="code">_object(obj).copy()</span></p>
+                                        <p><span data-type="code">_object(obj).copy(target)</span></p>
+                                    </td>
+                                    <td><span data-type="code">object</span></td>
+                                    <td>Makes copy of defined object. If target-object is defined, will place copies of properties into it.</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p><span data-type="code">_object(obj).isValueIn(value)</span></p>
+                                        <p><span data-type="code">_object(obj).isValueIn(value, nesting)</span></p>
+                                    </td>
+                                    <td><span data-type="code">bool</span></td>
+                                    <td>Try to find value inside object. If <span data-type="code">nesting = true</span> – will make search include nested objects.</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).getByPath(path)</span></td>
+                                    <td><span data-type="code">value of found object</span></td>
+                                    <td>Try find value of property by string path, like: <span data-type="code">"prop_0.prop_1.prop_2"</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).createInstanceClass()</span></td>
+                                    <td><span data-type="code">Instance of class</span></td>
+                                    <td>Create instance of class. </td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).binding().bind(property, handle)</span></td>
+                                    <td><span data-type="code">id</span></td>
+                                    <td>Binds property with handle</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).binding().unbind(property, id)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove handle for defined property by ID</td>
+                                </tr>
+                                <tr>
+                                    <td><span data-type="code">_object(obj).binding().kill(property)</span></td>
+                                    <td><span data-type="code">void</span></td>
+                                    <td>Remove all handle for defined property</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">Okay you have some functionality from box, but the most important thing is – you can add your own functionality via next interface. </p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">//For single node
+flex.callers.define.node   (parameters);
+//For several nodes
+flex.callers.define.nodes  (parameters);
+//For single array  
+flex.callers.define.array  (parameters);
+//For single string 
+flex.callers.define.string (parameters);
+//For single object 
+flex.callers.define.object (parameters);
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">For all callers syntax is same.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Code">
+                        <pre class="prettyprint linenums">flex.callers.define.nodes(
+   //Define namespace of chain
+   //You can use any number of parts as you want, for example: 
+   // > nodes.attr
+   // > nodes.attrs.set
+   // > nodes.attrs.get and etc.
+   'attr',
+   //Define handle
+   function (name, value) {
+       //Object [this] will have only one property - [target].
+       //[this.target] can be some value (or object) if it's single call (node, string, object and etc) or it will be array for: nodes
+       Array.prototype.forEach.call(this.target, function (target) {
+           result.push(methods.attr(target, name, value));
+       });
+       return results;
+   }
+);
+//All parts of chain will be a functions, so to call method of chain you should use next:
+_node('selector').attrs(arg);
+_node('selector').nodes().attrs(arg);
+_node('selector').nodes().attrs().get();
+_node('selector').nodes().attrs().set(arg);
+</pre>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Common">
+                            <p data-type="label" data-size="normal" data-align="left">As you can see you can easily extend functionality of your application and add necessary addition methods for nodes, for objects or for any other type.</p>
+                        </div>
+                    </div>
+                    <div data-type="Row.Simple">
+                        <div data-type="Row.Simple.Side" data-side="left">
+                            <p data-type="label" data-size="big" data-align="left"><a name="section_16" data-type="title">GitHub</a></p>
+                            <p data-type="label" data-size="normal" data-align="left">You can discover a code and take a last version of flex.patterns on <a href="https://github.com/DmitryAstafyev/Patterns" target="_blank">GitHub</a>. Also you can contact with author of flex.</p>
+                        </div>
+                        <div data-type="Row.Simple.Side" data-side="right">
+                            <p data-type="label" data-size="big" data-align="left">License</p>
+                            <p data-type="label" data-size="normal" data-align="left">The MIT License (MIT)
+
+Copyright (c) 2016
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div data-type="Menu">
+        <input type="checkbox" id="menu_switcher" />
+        <ul data-type="Menu.List">
+            <li><a href="#section_0">What is it?</a></li>
+            <li><a href="#section_1">Most important features</a></li>
+            <li><a href="#section_2">How it works?</a></li>
+            <li><a href="#section_3">Installation</a></li>
+            <li><a href="#section_4">Creating template</a></li>
+            <li><a href="#section_5">Attaching template</a></li>
+            <li><a href="#section_6">Multiply values</a></li>
+            <li><a href="#section_7">Controllers and callbacks</a></li>
+            <li><a href="#section_8">Models and binds</a></li>
+            <li><a href="#section_9">DOM and map</a></li>
+            <li><a href="#section_10">Resources / exchanging of data</a></li>
+            <li><a href="#section_11">Conditions</a></li>
+            <li><a href="#section_12">Settings and cache</a></li>
+            <li><a href="#section_13">Preloading</a></li>
+            <li><a href="#section_14">Cloning</a></li>
+            <li><a href="#section_15">From box</a></li>
+            <li><a href="#section_16">GitHub</a></li>
+            <li><hr/></li>
+            <li><a href="scripts/patterns.js" target="_blank" download>Download patterns.js</a></li>
+            <li><a href="scripts/patterns.min.js" target="_blank" download>Download patterns.min.js</a></li>
+        </ul>
+        <label for="menu_switcher">
+            <a data-type="Menu.Button"></a>
+        </label>
+    </div>
+
+    <script type="text/javascript">
+        prettyPrint();
+    </script>
+</body>
+</html>
