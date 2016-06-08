@@ -71,6 +71,10 @@ div[data-type="TextInput.Info.Popup"] p{
     padding     :0.25rem;
     margin      :0;
 }
+p[data-type="TextInput.Error"]{
+    font-size   :0.8rem!important;
+    color       :red!important;
+}
 @keyframes move_arrow {
     from {right: 2rem;}
     to { right: 0.85rem;}

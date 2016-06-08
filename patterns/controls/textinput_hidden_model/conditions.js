@@ -3,8 +3,8 @@
         return data.type;
     },
     showinfo    : function (data) {
-        return data.bad_password === true ? 'show' : 'null';
+        return data.not_valid === true ? 'show' : 'null';
     }
 };
-conditions.showinfo.tracking = ['bad_password'];
+conditions.showinfo.tracking = ['not_valid'];
 _conditions(conditions);
