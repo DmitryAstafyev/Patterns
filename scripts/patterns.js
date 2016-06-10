@@ -14,24 +14,25 @@
         Maximize    = function () { };
     //=== Patterns module ===
     Patterns.prototype      = function () {
-        var config      = null,
-            settings    = null,
+        var config          = null,
+            settings        = null,
             //Classes
-            source      = null,
-            pattern     = null,
-            instance    = null,
-            result      = null,
-            caller      = null,
+            source          = null,
+            pattern         = null,
+            instance        = null,
+            result          = null,
+            caller          = null,
             //Methods
-            layout      = null,
-            privates    = null,
-            controllers = null,
-            storage     = null,
-            logs        = null,
-            measuring   = null,
-            helpers     = null,
-            conditions  = null,
-            callers     = null;
+            layout          = null,
+            privates        = null,
+            controllers     = null,
+            storage         = null,
+            logs            = null,
+            measuring       = null,
+            helpers         = null,
+            conditions      = null,
+            callers         = null,
+            defaultshooks   = null;
         //Config
         config      = {
             values      : {
@@ -129,6 +130,7 @@
                 CONTROLLERS_LINKS       : 'FLEX_PATTERNS_CONTROLLERS_LINKS',
                 CONTROLLERS_STORAGE     : 'FLEX_PATTERNS_CONTROLLERS_STORAGE',
                 CONDITIONS_STORAGE      : 'FLEX_PATTERNS_CONDITIONS_STORAGE',
+                HOOKS_STORAGE           : 'FLEX_PATTERNS_HOOKS_STORAGE',
                 PATTERN_SOURCES         : 'FLEX_PATTERNS_PATTERN_SOURCES',
                 PATTERNS                : 'FLEX_PATTERNS_PATTERNS',
             },
@@ -2608,6 +2610,24 @@
                             });
                         }
                         return _hooks;
+                    },
+                    defaults: function () {
+                        function process(source, destination) {
+                            _object(source).forEach(function (hook_name, hook_value) {
+                                if (destination[hook_name] === void 0) {
+                                    destination[hook_name] = hook_value;
+                                } else {
+                                    if (destination[hook_name] !== null && typeof destination[hook_name] === 'object') {
+                                        process(hook_value, destination[hook_name]);
+                                    }
+                                }
+                            });
+                        };
+                        var defaults = defaultshooks.storage.get(self.url);
+                        if (defaults !== null && typeof defaults === 'object') {
+                            process(defaults, privates.hooks);
+                        }
+                        return true;
                     }
                 };
                 render      = function (clone) {
@@ -2624,10 +2644,11 @@
                                 return list;
                             }()),
                             function (sources) {
-                                var _component = sources.length === 1 ? component.process(sources[0].html()) : null;
+                                var _component = null;
+                                hooks.defaults();
+                                _component = sources.length === 1 ? component.process(sources[0].html()) : null;
                                 if (_component !== null) {
                                     _component.render();
-                                    window.console.log('hhheeeeey!');
                                 } else {
                                     hooks.apply();
                                     privates.pattern = instance.init(self.url);
@@ -2983,7 +3004,7 @@
             }())
         };
         conditions  = {
-            storage     : {
+            storage : {
                 add: function (pattern_url, _conditions) {
                     var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.CONDITIONS_STORAGE, {});
                     storage[pattern_url] = _conditions;
@@ -2993,7 +3014,7 @@
                     return storage[pattern_url] !== void 0 ? storage[pattern_url] : null;
                 },
             },
-            attach: function (_conditions) {
+            attach  : function (_conditions) {
                 var url     = null,
                     _source = null;
                 if (typeof _conditions === 'object' && _conditions !== null) {
@@ -3001,6 +3022,29 @@
                     if (url !== null) {
                         _source = controllers.references.getPatternURL(url);
                         conditions.storage.add(_source, _conditions);
+                    }
+                }
+            }
+        };
+        defaultshooks = {
+            storage : {
+                add: function (pattern_url, _hooks) {
+                    var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.HOOKS_STORAGE, {});
+                    storage[pattern_url] = _hooks;
+                },
+                get : function (pattern_url) {
+                    var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.HOOKS_STORAGE, {});
+                    return storage[pattern_url] !== void 0 ? storage[pattern_url] : null;
+                },
+            },
+            attach  : function (_hooks) {
+                var url     = null,
+                    _source = null;
+                if (typeof _hooks === 'object' && _hooks !== null) {
+                    url = controllers.current.get() !== null ? controllers.current.get() : flex.resources.attach.js.getCurrentSRC();
+                    if (url !== null) {
+                        _source = controllers.references.getPatternURL(url);
+                        defaultshooks.storage.add(_source, _hooks);
                     }
                 }
             }
@@ -3138,6 +3182,9 @@
             conditions  : {
                 attach  : conditions.attach
             },
+            hooks       : {
+                attach: defaultshooks.attach
+            },
             classes     : {
                 NODE_LIST: {
                     addMethod : instance.nodeList.addMethod
@@ -3151,6 +3198,7 @@
         callers.init();
         window['_controller'] = privates.controller.attach;
         window['_conditions'] = privates.conditions.attach;
+        window['_hooks'     ] = privates.hooks.attach;
         //Run layout parser
         layout.attach();
         //Public part
