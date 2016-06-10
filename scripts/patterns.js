@@ -194,9 +194,12 @@
                 NO_URL_FOR_CLONE_HOOK   : '2001:NO_URL_FOR_CLONE_HOOK',
             },
             caller      : {
-                CANNOT_INIT_PATTERN     : '3000:CANNOT_INIT_PATTERN',
-                CANNOT_GET_CHILD_PATTERN: '3001:CANNOT_GET_CHILD_PATTERN',
-                CANNOT_GET_PATTERN      : '3002:CANNOT_GET_PATTERN',
+                CANNOT_INIT_PATTERN             : '3000:CANNOT_INIT_PATTERN',
+                CANNOT_GET_CHILD_PATTERN        : '3001:CANNOT_GET_CHILD_PATTERN',
+                CANNOT_GET_PATTERN              : '3002:CANNOT_GET_PATTERN',
+                PATTERN_WITHOUT_SRC             : '3003:PATTERN_WITHOUT_SRC',
+                CANNOT_FIND_ROOT_TEMPLATE       : '3004:CANNOT_FIND_ROOT_TEMPLATE',
+                ONLY_ONE_TEMPLATE_ON_SAME_LEVEL : '3005:ONLY_ONE_TEMPLATE_ON_SAME_LEVEL',
             },
             layout      : {
                 BAD_ARRAY_OF_HOOKS      : '4000:BAD_ARRAY_OF_HOOKS',
@@ -1195,16 +1198,6 @@
                             convert.hooks.      process();
                             convert.model.      process();
                             return true;
-                            /*
-                            if (privates.pattern.innerHTML.replace(settings.regs.NOT_WORDS_NUMBERS, '') === privates.html.replace(settings.regs.NOT_WORDS_NUMBERS, '')) {
-                                convert.hooks.process();
-                                convert.model.process();
-                                return true;
-                            } else {
-                                flex.logs.log(signature() + logs.pattern.WRONG_PATTERN_WRAPPER, flex.logs.types.CRITICAL);
-                                throw logs.pattern.WRONG_PATTERN_WRAPPER;
-                            }
-                            */
                         } else {
                             flex.logs.log(signature() + logs.pattern.CANNOT_CREATE_WRAPPER, flex.logs.types.CRITICAL);
                             throw logs.pattern.CANNOT_CREATE_WRAPPER;
@@ -2422,19 +2415,20 @@
         //END: result class ===============================================
         //BEGIN: caller class ===============================================
         caller      = {
-            proto   : function(privates){
+            proto   : function (privates){
                 var self        = this,
                     mount       = null,
                     render      = null,
                     patterns    = null,
                     hooks       = null,
                     signature   = null,
-                    returning   = null;
+                    returning   = null,
+                    component   = null;
                 patterns    = {
                     reset   : function(){
                         privates.patterns = {};
                     },
-                    find: function (hooks) {
+                    find    : function (hooks) {
                         hooks = hooks instanceof Array ? hooks : [hooks];
                         if (hooks !== null) {
                             hooks.forEach(function (_hooks) {
@@ -2452,6 +2446,124 @@
                             privates.patterns[self.url] = self.url;
                         }
                     },
+                };
+                component   = {
+                    getStructure    : function(html){
+                        function analysis(nodes, storage) {
+                            Array.prototype.forEach.call(nodes, function (node) {
+                                var sub     = node.nodeName.toLowerCase(),
+                                    current = {};
+                                current.url = node.hasAttribute('src') ? node.getAttribute('src') : null;
+                                if (current.url !== null) {
+                                    current.sub = {};
+                                    if (node.children.length > 0) {
+                                        analysis(node.children, current.sub);
+                                    }
+                                    if (storage[sub] !== void 0) {
+                                        if (storage[sub] instanceof Array) {
+                                            storage[sub].push(current);
+                                        } else {
+                                            storage[sub] = [storage[sub], current];
+                                        }
+                                    } else {
+                                        storage[sub] = current;
+                                    }
+                                } else {
+                                    flex.logs.log(logs.SIGNATURE + 'If you use inside template other templates, you cannot use nothing else. And src should be defined fro all included templates.', flex.logs.types.CRITICAL);
+                                    throw Error(logs.caller.PATTERN_WITHOUT_SRC);
+                                    return false;
+                                }
+                            });
+                        };
+                        function buildCaller(structure, hooks, callers) {
+                            function add(_item, _hooks, structure, key) {
+                                _object(_item).forEach(function (hook_name, hook_value) {
+                                    if (typeof hook_value !== 'object') {
+                                        _hooks[hook_name] = hook_value;
+                                    }
+                                });
+                                if (structure[key].sub !== void 0) {
+                                    buildCaller(structure[key].sub, _item, _hooks);
+                                }
+                            };
+                            _object(structure).forEach(function (key, value) {
+                                if (value instanceof Array) {
+                                    flex.logs.log(logs.SIGNATURE + 'You cannot use templates in templates in same level. You can only include template into templates. Problematic hook: ' + key + '.', flex.logs.types.CRITICAL);
+                                    throw Error(logs.caller.ONLY_ONE_TEMPLATE_ON_SAME_LEVEL);
+                                } else {
+                                    callers[key] = {
+                                        url     : value.url,
+                                        hooks   : {}
+                                    };
+                                    if (hooks[key] !== void 0 && hooks[key] !== null && typeof hooks[key] === 'object' && !(hooks[key] instanceof Array)) {
+                                        add(hooks[key], callers[key].hooks, structure, key);
+                                    } else if (hooks[key] instanceof Array) {
+                                        callers[key].hooks = [];
+                                        hooks[key].forEach(function (item) {
+                                            var current = {};
+                                            add(item, current, structure, key);
+                                            callers[key].hooks.push(current);
+                                        });
+                                    }
+                                }
+                            });
+                        };
+                        var container   = document.createElement('div'),
+                            structure   = {},
+                            callers     = {},
+                            _hooks      = {};
+                        container.innerHTML = html;
+                        analysis(container.children, structure);
+                        if (structure[config.values.PATTERN_NODE.toLowerCase()] !== void 0) {
+                            _hooks[config.values.PATTERN_NODE.toLowerCase()] = privates.hooks;
+                            buildCaller(structure, _hooks, callers);
+                            return callers[config.values.PATTERN_NODE.toLowerCase()];
+                        } else {
+                            throw Error(logs.caller.CANNOT_FIND_ROOT_TEMPLATE);
+                            return false;
+                        }
+                    },
+                    addGetters      : function(callers){
+                        if (callers.hooks !== void 0) {
+                            if (callers.hooks instanceof Array) {
+                                callers.hooks.forEach(function (item, index) {
+                                    _object(item).forEach(function (hook_name, hook_value) {
+                                        if (typeof hook_value === 'object' && !(hook_value instanceof Array) && hook_value.url !== void 0) {
+                                            callers.hooks[index][hook_name] = caller.instance({
+                                                url     : hook_value.url,
+                                                hooks   : component.addGetters(hook_value)
+                                            });
+                                        }
+                                    });
+                                });
+                            } else if (typeof callers.hooks === 'object') {
+                                _object(callers.hooks).forEach(function (hook_name, hook_value) {
+                                    if (typeof hook_value === 'object' && !(hook_value instanceof Array) && hook_value.url !== void 0) {
+                                        callers.hooks[hook_name] = caller.instance({
+                                            url     : hook_value.url,
+                                            hooks   : component.addGetters(hook_value)
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                        return callers.hooks;
+                    },
+                    process         : function (html) {
+                        var _callers = {};
+                        if ((new RegExp('<\\s*' + config.values.PATTERN_NODE + '\\s{1,}src\\s*=')).test(html)) {
+                            _callers = component.getStructure(html);
+                            _object(privates).forEach(function (name, value) {
+                                if (['hooks', '__instance', 'pattern'].indexOf(name) === -1) {
+                                    _callers[name] = value;
+                                }
+                            });
+                            component.addGetters(_callers);
+                            return caller.instance(_callers);
+                        } else {
+                            return false;
+                        }
+                    }
                 };
                 hooks       = {
                     values  : {
@@ -2511,21 +2623,27 @@
                                 });
                                 return list;
                             }()),
-                            function () {
-                                hooks.apply();
-                                privates.pattern        = instance.init(self.url);
-                                if (privates.pattern !== null) {
-                                    privates.pattern    = privates.pattern.build(privates.hooks, privates.resources, privates.conditions);
-                                    if (privates.pattern instanceof settings.classes.RESULT) {
-                                        privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
-                                        if (privates.callbacks.success !== null) {
-                                            privates.pattern.handle()(privates.callbacks.success, privates.resources);
-                                        }
-                                    }
+                            function (sources) {
+                                var _component = sources.length === 1 ? component.process(sources[0].html()) : null;
+                                if (_component !== null) {
+                                    _component.render();
+                                    window.console.log('hhheeeeey!');
                                 } else {
-                                    flex.logs.log(signature() + logs.caller.CANNOT_GET_PATTERN, flex.logs.types.CRITICAL);
-                                    flex.system.handle(privates.callbacks.fail, self.url);
-                                    throw logs.caller.CANNOT_GET_PATTERN;
+                                    hooks.apply();
+                                    privates.pattern = instance.init(self.url);
+                                    if (privates.pattern !== null) {
+                                        privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions);
+                                        if (privates.pattern instanceof settings.classes.RESULT) {
+                                            privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
+                                            if (privates.callbacks.success !== null) {
+                                                privates.pattern.handle()(privates.callbacks.success, privates.resources);
+                                            }
+                                        }
+                                    } else {
+                                        flex.logs.log(signature() + logs.caller.CANNOT_GET_PATTERN, flex.logs.types.CRITICAL);
+                                        flex.system.handle(privates.callbacks.fail, self.url);
+                                        throw logs.caller.CANNOT_GET_PATTERN;
+                                    }
                                 }
                             },
                             function () {
@@ -2577,18 +2695,18 @@
                 ///     [boolean]           remove_missing_hooks    (remove missed bind data),                                          &#13;&#10;
                 /// }</param>
                 /// <returns type="boolean">true - success; false - fail</returns>
-                if (flex.oop.objects.validate(parameters, [ { name: 'url',                  type: 'string'                                  },
-                                                            { name: 'node',                 type: ['node', 'string'],   value: null         },
-                                                            { name: 'before',               type: ['node', 'string'],   value: null         },
-                                                            { name: 'after',                type: ['node', 'string'],   value: null         },
-                                                            { name: 'id',                   type: 'string',             value: flex.unique()},
-                                                            { name: 'replace',              type: 'boolean',            value: false        },
-                                                            { name: 'hooks',                type: ['object', 'array'],  value: null         },
-                                                            { name: 'data',                 type: 'array',              value: null         },
-                                                            { name: 'conditions',           type: 'object',             value: null         },
-                                                            { name: 'callbacks',            type: 'object',             value: {}           },
-                                                            { name: 'resources',            type: 'object',             value: {}           },
-                                                            { name: 'remove_missing_hooks', type: 'boolean',            value: true         }]) !== false) {
+                if (flex.oop.objects.validate(parameters, [ { name: 'url',                  type: 'string'                                              },
+                                                            { name: 'node',                 type: ['node', 'string', 'array', 'NodeList'],      value: null         },
+                                                            { name: 'before',               type: ['node', 'string', 'array', 'NodeList'],      value: null         },
+                                                            { name: 'after',                type: ['node', 'string', 'array', 'NodeList'],      value: null         },
+                                                            { name: 'id',                   type: 'string',                                     value: flex.unique()},
+                                                            { name: 'replace',              type: 'boolean',                                    value: false        },
+                                                            { name: 'hooks',                type: ['object', 'array'],                          value: null         },
+                                                            { name: 'data',                 type: 'array',                                      value: null         },
+                                                            { name: 'conditions',           type: 'object',                                     value: null         },
+                                                            { name: 'callbacks',            type: 'object',                                     value: {}           },
+                                                            { name: 'resources',            type: 'object',                                     value: {}           },
+                                                            { name: 'remove_missing_hooks', type: 'boolean',                                    value: true         }]) !== false) {
                     flex.oop.objects.validate(parameters.callbacks, [   { name: 'before',   type: 'function', value: null },
                                                                         { name: 'success',  type: 'function', value: null },
                                                                         { name: 'fail',     type: 'function', value: null }]);
@@ -2596,13 +2714,15 @@
                         parent          : settings.classes.CALLER,
                         constr          : function () {
                             this.url = flex.system.url.restore(parameters.url);
+                            //Uncomment to check structure of component
+                            //this._hooks = parameters.hooks;
                         },
                         privates        : {
                             //From parameters
                             id                  : parameters.id,
-                            node                : parameters.node   !== null ? (typeof parameters.node      === 'string' ? _nodes(parameters.node   ).target : [parameters.node]     ) : null,
-                            before              : parameters.before !== null ? (typeof parameters.before    === 'string' ? _nodes(parameters.before ).target : [parameters.before]   ) : null,
-                            after               : parameters.after  !== null ? (typeof parameters.after     === 'string' ? _nodes(parameters.after  ).target : [parameters.after]    ) : null,
+                            node                : parameters.node   !== null ? (typeof parameters.node      === 'string' ? _nodes(parameters.node   ).target : (parameters.node     instanceof Array ? parameters.node      : (parameters.node      instanceof NodeList ? parameters.node   : [parameters.node]     ))) : null,
+                            before              : parameters.before !== null ? (typeof parameters.before    === 'string' ? _nodes(parameters.before ).target : (parameters.before   instanceof Array ? parameters.before    : (parameters.before    instanceof NodeList ? parameters.before : [parameters.before]   ))) : null,
+                            after               : parameters.after  !== null ? (typeof parameters.after     === 'string' ? _nodes(parameters.after  ).target : (parameters.after    instanceof Array ? parameters.after     : (parameters.after     instanceof NodeList ? parameters.after  : [parameters.after]    ))) : null,
                             replace             : parameters.replace,
                             hooks               : parameters.hooks,
                             data                : parameters.data,
@@ -2618,7 +2738,7 @@
                 } else {
                     return null;
                 }
-            },
+            }
         };
         //END: caller class ===============================================
         layout      = {
@@ -2681,52 +2801,54 @@
                 var _caller     = null,
                     is_child    = is_child !== void 0 ? is_child : false,
                     url         = null;
-                if (pattern.hasAttribute('src')) {
-                    _caller = {
-                        url     : pattern.getAttribute('src'),
-                        hooks   : {}
-                    };
-                    Array.prototype.forEach.call(pattern.children, function (child) {
-                        var index   = 0,
-                            hook    = child.nodeName.toLowerCase();
-                        if (_caller.hooks[hook] !== void 0 && !(_caller.hooks instanceof Array)) {
-                            _caller.hooks = [_caller.hooks];
-                        }
-                        if (_caller.hooks instanceof Array) {
-                            index = getIndex(_caller.hooks, hook);
-                            if (index === -1) {
-                                _caller.hooks.push({});
-                                index = _caller.hooks.length - 1;
-                            }
-                            if (!child.hasAttribute('src')) {
-                                _caller.hooks[index][hook] = child.innerHTML;
-                            } else {
-                                _caller.hooks[index][hook] = layout.caller(child, true);
-                            }
-                        } else {
-                            if (!child.hasAttribute('src')) {
-                                _caller.hooks[hook] = child.innerHTML;
-                            } else {
-                                _caller.hooks[hook] = layout.caller(child, true);
-                            }
-                        }
-                    });
-                    if (typeof _caller.hooks === 'object' && Object.keys(_caller.hooks).length === 0) {
-                        delete _caller.hooks;
+                _caller = {
+                    url     : pattern.hasAttribute('src') ? pattern.getAttribute('src') : null,
+                    hooks   : {}
+                };
+                Array.prototype.forEach.call(pattern.children, function (child) {
+                    var index   = 0,
+                        hook    = child.nodeName.toLowerCase();
+                    if (_caller.hooks[hook] !== void 0 && !(_caller.hooks instanceof Array)) {
+                        _caller.hooks = [_caller.hooks];
                     }
-                    if (!is_child) {
-                        _caller.node        = pattern;
-                        _caller.replace     = true;
-                        _caller.callbacks   = {
-                            success : getCallback(pattern, 'success'),
-                            error   : getCallback(pattern, 'error'),
-                        };
-                        _caller = caller.instance(_caller).render();
+                    if (_caller.hooks instanceof Array) {
+                        index = getIndex(_caller.hooks, hook);
+                        if (index === -1) {
+                            _caller.hooks.push({});
+                            index = _caller.hooks.length - 1;
+                        }
+                        if (child.children.length === 0) {
+                            _caller.hooks[index][hook] = child.innerHTML;
+                        } else {
+                            _caller.hooks[index][hook] = layout.caller(child, true);
+                        }
                     } else {
+                        if (child.children.length === 0) {
+                            _caller.hooks[hook] = child.innerHTML;
+                        } else {
+                            _caller.hooks[hook] = layout.caller(child, true);
+                        }
+                    }
+                });
+                if (typeof _caller.hooks === 'object' && Object.keys(_caller.hooks).length === 0) {
+                    delete _caller.hooks;
+                }
+                if (!is_child && _caller.url !== null) {
+                    _caller.node        = pattern;
+                    _caller.replace     = true;
+                    _caller.callbacks   = {
+                        success : getCallback(pattern, 'success'),
+                        error   : getCallback(pattern, 'error'),
+                    };
+                    _caller = caller.instance(_caller).render();
+                    return _caller;
+                } else {
+                    if (_caller.url !== null) {
                         _caller = caller.instance(_caller);
+                        return _caller;
                     }
                 }
-                return _caller;
+                return _caller.hooks;
             },
             attach  : function () {
                 if (document.readyState !== 'complete') {
@@ -7217,10 +7339,12 @@
                                                         }
                                                     } else if (type === "array") {
                                                         status = (object[property.name] instanceof Array === true ? true : status);
+                                                    } else if (window[type] !== void 0 && ['string', 'number', 'bool'].indexOf(type) === -1) {
+                                                        status = (object[property.name] instanceof window[type] ? true : status);
                                                     } else {
                                                         status = (typeof object[property.name] === type ? true : status);
                                                     }
-                                                    if (status !== false){
+                                                    if (status !== false) {
                                                         throw 'found';
                                                     }
                                                 });
@@ -7230,13 +7354,13 @@
                                                 }
                                             } finally {
                                                 if (status === false) {
-                                                    if (property.value) {
+                                                    if (property.value !== void 0) {
                                                         object[property.name] = property.value;
                                                     } else {
                                                         throw 'deny';
                                                     }
                                                 } else {
-                                                    if (property.values) {
+                                                    if (property.values !== void 0) {
                                                         if (property.values instanceof Array) {
                                                             try {
                                                                 values_check = false;

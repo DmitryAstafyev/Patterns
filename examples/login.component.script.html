@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="../scripts/patterns.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        _patterns.debug();
+        var id = flex.unique();
+        _patterns.get({
+            url     : '/components/login.popup.html',
+            node    : document.body,
+            hooks   : {
+                id      : id,
+                title   : 'Test dialog window',
+                content : {
+                    login       : {
+                        type                : 'text',
+                        not_valid_message   : 'Sorry, but your login should not be shorter than 2 symbols. Please, try again.',
+                        not_valid           : false
+                    },
+                    password    : {
+                        type                : 'password',
+                        not_valid_message   : 'Sorry, but your password should not be shorter than 6 symbols. Please, try again.',
+                        not_valid           : false
+                    },
+                    controls    : [
+                        { title: 'login',   id: 'login_button'  },
+                        { title: 'cancel',  id: 'cancel_button' }
+                    ],
+                }
+            },
+            callbacks: {
+                success: function (results) {
+                    var instance    = this,
+                        dom         = results.dom,
+                        model       = results.model;
+                    dom.listed.__content__.__controls__[0].button.on('click', function () {
+                        var data = model.__content__;
+                        if (data.__login__.value.length < 2) {
+                            data.__login__.not_valid = true;
+                            setTimeout(function () {
+                                data.__login__.not_valid = false;
+                            }, 2000);
+                        }
+                        if (data.__password__.value.length < 6) {
+                            data.__password__.not_valid = true;
+                            setTimeout(function () {
+                                data.__password__.not_valid = false;
+                            }, 2000);
+                        }
+                    });
+                }
+            },
+        }).render();
+    </script>
+</body>
+</html>
