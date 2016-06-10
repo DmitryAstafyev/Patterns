@@ -1998,8 +1998,8 @@
                     }
                 };
                 controller  = {
-                    apply       : function (_instance, _resources) {
-                        var _controllers = controllers.storage.get(self.url);
+                    apply       : function (_instance, _resources, _component_url) {
+                        var _controllers = controllers.storage.get(_component_url !== null ? [_component_url, self.url] : self.url);
                         if (_controllers !== null) {
                             _controllers.forEach(function (controller) {
                                 methods.handle(controller, _instance, _resources);
@@ -2008,7 +2008,7 @@
                     },
                 };
                 methods     = {
-                    build       : function (_hooks, _resources, _conditions) {
+                    build       : function (_hooks, _resources, _conditions, _component_url) {
                         var nodes           = [],
                             _map            = [],
                             _binds          = [],
@@ -2050,7 +2050,7 @@
                             instance        : privates.__instance,
                             handle          : function (handle, _resources) { return methods.handle(handle, _instance, _resources); }
                         });
-                        controller.apply(_instance, _resources);
+                        controller.apply(_instance, _resources, _component_url);
                         return _instance;
                     },
                     handle      : function (handle, _instance, _resources) {
@@ -2064,9 +2064,9 @@
                             });
                         }
                     },
-                    bind        : function (hooks, resources, conditions) {
+                    bind        : function (hooks, resources, conditions, component_url) {
                         return function () {
-                            return methods.build(hooks, resources, conditions);
+                            return methods.build(hooks, resources, conditions, component_url);
                         };
                     }
                 };
@@ -2560,6 +2560,9 @@
                                     _callers[name] = value;
                                 }
                             });
+                            //Set URL to component (it's necessary for cases if component has controller
+                            _callers.component = self.url;
+                            //Add getters
                             component.addGetters(_callers);
                             return caller.instance(_callers);
                         } else {
@@ -2579,7 +2582,7 @@
                                 throw logs.caller.CANNOT_GET_CHILD_PATTERN;
                             } else {
                                 hooks.apply(_hooks);
-                                return _instance.bind(_hooks, value.resources(), value.conditions());
+                                return _instance.bind(_hooks, value.resources(), value.conditions(), value.component());
                             }
                         }
                     },
@@ -2648,12 +2651,12 @@
                                 hooks.defaults();
                                 _component = sources.length === 1 ? component.process(sources[0].html()) : null;
                                 if (_component !== null) {
-                                    _component.render();
+                                    _component.render(false, self.url);
                                 } else {
                                     hooks.apply();
                                     privates.pattern = instance.init(self.url);
                                     if (privates.pattern !== null) {
-                                        privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions);
+                                        privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions, privates.component);
                                         if (privates.pattern instanceof settings.classes.RESULT) {
                                             privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
                                             if (privates.callbacks.success !== null) {
@@ -2677,7 +2680,7 @@
                         hooks.apply();
                         privates.pattern = instance.init(self.url);
                         if (privates.pattern !== null) {
-                            privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions);
+                            privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions, privates.component);
                             if (privates.pattern instanceof settings.classes.RESULT) {
                                 return privates.pattern;
                             }
@@ -2692,12 +2695,14 @@
                     hooks       : function () { return privates.hooks;      },
                     resources   : function () { return privates.resources;  },
                     conditions  : function () { return privates.conditions; },
+                    component   : function () { return privates.component;  },
                 };
                 return {
                     render      : returning.render,
                     hooks       : returning.hooks,
                     conditions  : returning.conditions,
-                    resources   : returning.resources
+                    resources   : returning.resources,
+                    component   : returning.component,
                 };
             },
             instance: function (parameters) {
@@ -2716,7 +2721,8 @@
                 ///     [boolean]           remove_missing_hooks    (remove missed bind data),                                          &#13;&#10;
                 /// }</param>
                 /// <returns type="boolean">true - success; false - fail</returns>
-                if (flex.oop.objects.validate(parameters, [ { name: 'url',                  type: 'string'                                              },
+                if (flex.oop.objects.validate(parameters, [ //For public usage
+                                                            { name: 'url',                  type: 'string'                                              },
                                                             { name: 'node',                 type: ['node', 'string', 'array', 'NodeList'],      value: null         },
                                                             { name: 'before',               type: ['node', 'string', 'array', 'NodeList'],      value: null         },
                                                             { name: 'after',                type: ['node', 'string', 'array', 'NodeList'],      value: null         },
@@ -2727,7 +2733,9 @@
                                                             { name: 'conditions',           type: 'object',                                     value: null         },
                                                             { name: 'callbacks',            type: 'object',                                     value: {}           },
                                                             { name: 'resources',            type: 'object',                                     value: {}           },
-                                                            { name: 'remove_missing_hooks', type: 'boolean',                                    value: true         }]) !== false) {
+                                                            { name: 'remove_missing_hooks', type: 'boolean',                                    value: true         },
+                                                            //For internal usage
+                                                            { name: 'component',            type: 'string',                                     value: null         }]) !== false) {
                     flex.oop.objects.validate(parameters.callbacks, [   { name: 'before',   type: 'function', value: null },
                                                                         { name: 'success',  type: 'function', value: null },
                                                                         { name: 'fail',     type: 'function', value: null }]);
@@ -2752,6 +2760,7 @@
                             remove_missing_hooks: parameters.remove_missing_hooks,
                             resources           : parameters.resources,
                             //Local
+                            component           : parameters.component,
                             pattern             : null
                         },
                         prototype       : caller.proto
@@ -2902,9 +2911,16 @@
                     }
                     storage[pattern_url].push(controller);
                 },
-                get : function (pattern_url) {
-                    var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.CONTROLLERS_STORAGE, {});
-                    return storage[pattern_url] !== void 0 ? storage[pattern_url] : null;
+                get : function (urls) {
+                    var storage     = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.CONTROLLERS_STORAGE, {}),
+                        urls        = typeof urls === 'string' ? [urls] : urls,
+                        result      = [];
+                    urls.forEach(function (url) {
+                        if (storage[url] !== void 0) {
+                            result = result.concat(storage[url]);
+                        }
+                    });
+                    return result;
                 },
             },
             current     : {
