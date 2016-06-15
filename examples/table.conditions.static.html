@@ -9,6 +9,7 @@
     <script type="text/javascript">
         (function () {
             "use strict";
+            _patterns.debug();
             var data_source = [];
             for (var i = 0; i < 20; i += 1) {
                 data_source.push({
@@ -33,6 +34,10 @@
                         hooks: data_source,
                     })
                 },
+                callbacks: {
+                    success: function (collapsed, uncollapsed) {
+                    }
+                }
             }).render();
         }());
     </script>

@@ -10,11 +10,11 @@
         _patterns.debug();
         var id = flex.unique();
         _patterns.get({
-            url     : '/components/login.popup.html',
+            url     : '/components/login/component.html',
             node    : document.body,
             hooks   : {
                 id      : id,
-                title   : 'Overwritten'
+                title   : 'Overwritten title'
             },
             callbacks: {
                 success: function (results) {

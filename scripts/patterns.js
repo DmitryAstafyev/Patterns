@@ -1,5 +1,8 @@
 ﻿// LICENSE 
 // This file (core / module) is released under the MIT License. See [LICENSE] file for details.
+/*TODO:
+- add clone mount methods
+*/
 (function(){
     "use strict";
     //Modules declarations
@@ -11,7 +14,10 @@
         Focus       = function () { },
         Move        = function () { },
         Resize      = function () { },
-        Maximize    = function () { };
+        Maximize    = function () { },
+        Types       = {
+            array: function () { }
+        };
     //=== Patterns module ===
     Patterns.prototype      = function () {
         var config          = null,
@@ -34,7 +40,7 @@
             callers         = null,
             defaultshooks   = null;
         //Config
-        config      = {
+        config          = {
             values      : {
                 USE_STORAGE_CSS : true,
                 USE_STORAGE_JS  : true,
@@ -69,7 +75,7 @@
             }
         };
         //Settings
-        settings    = {
+        settings        = {
             measuring       : {
                 MEASURE : true,
             },
@@ -170,7 +176,7 @@
                 INDEXES     : '__indexes'
             }
         };
-        logs        = {
+        logs            = {
             SIGNATURE   : '[flex.ui.patterns]', 
             source      : {
                 TEMPLATE_WAS_LOADED     : '0001:TEMPLATE_WAS_LOADED',
@@ -184,12 +190,11 @@
                 WRONG_PATTERN_WRAPPER               : '1002:WRONG_PATTERN_WRAPPER',
                 WRONG_HOOK_VALUE                    : '1003:WRONG_HOOK_VALUE',
                 WRONG_CONDITION_DEFINITION          : '1004:WRONG_CONDITION_DEFINITION',
-                MODEL_HOOK_NEEDS_WRAPPER            : '1005:MODEL_HOOK_NEEDS_WRAPPER',
-                CANNOT_FIND_CONDITION_BEGINING      : '1006:CANNOT_FIND_CONDITION_BEGINING',
-                CANNOT_FIND_CONDITION_END           : '1007:CANNOT_FIND_CONDITION_END',
-                CANNOT_FIND_CONDITION_NODES         : '1008:CANNOT_FIND_CONDITION_NODES',
-                CANNOT_FIND_CONDITION_VALUE         : '1009:CANNOT_FIND_CONDITION_VALUE',
-                UNEXCEPTED_ERROR_CONDITION_PARSER   : '1010:UNEXCEPTED_ERROR_CONDITION_PARSER',
+                CANNOT_FIND_CONDITION_BEGINING      : '1005:CANNOT_FIND_CONDITION_BEGINING',
+                CANNOT_FIND_CONDITION_END           : '1006:CANNOT_FIND_CONDITION_END',
+                CANNOT_FIND_CONDITION_NODES         : '1007:CANNOT_FIND_CONDITION_NODES',
+                CANNOT_FIND_CONDITION_VALUE         : '1008:CANNOT_FIND_CONDITION_VALUE',
+                UNEXCEPTED_ERROR_CONDITION_PARSER   : '1009:UNEXCEPTED_ERROR_CONDITION_PARSER',
             },
             instance    : {
                 BAD_HOOK_FOR_CLONE      : '2000:BAD_HOOK_FOR_CLONE',
@@ -209,7 +214,7 @@
         };
         //Classes implementations
         //BEGIN: source class ===============================================
-        source      = {
+        source          = {
             proto       : function (privates) {
                 var self        = this,
                     load        = null,
@@ -566,7 +571,7 @@
         };
         //END: source class ===============================================
         //BEGIN: pattern class ===============================================
-        pattern     = {
+        pattern         = {
             proto       : function (privates) {
                 var self            = this,
                     hooks           = null,
@@ -827,21 +832,6 @@
                                 }
                             },
                             inHTML  : function (node, model, reg_model) {
-                                function validatePlaceHolder(node, model) {
-                                    if (node.childNodes !== null && node.childNodes.length > 0) {
-                                        Array.prototype.forEach.call(node.childNodes, function (child) {
-                                            if (child.nodeType !== 3) {
-                                                if (child.className !== void 0 && child.className.indexOf(settings.css.classes.HOOK_WRAPPER) === -1) {
-                                                    flex.logs.log(signature() + logs.pattern.MODEL_HOOK_NEEDS_WRAPPER + '(model hook: ' + model + ')', flex.logs.types.CRITICAL);
-                                                    throw logs.pattern.MODEL_HOOK_NEEDS_WRAPPER;
-                                                } else if (child.className === void 0) {
-                                                    flex.logs.log(signature() + logs.pattern.MODEL_HOOK_NEEDS_WRAPPER + '(model hook: ' + model + ')', flex.logs.types.CRITICAL);
-                                                    throw logs.pattern.MODEL_HOOK_NEEDS_WRAPPER;
-                                                }
-                                            }
-                                        });
-                                    }
-                                };
                                 var reg_model = reg_model instanceof RegExp ? reg_model : new RegExp(settings.regs.MODEL_OPEN + model + settings.regs.MODEL_CLOSE, 'gi');
                                 if (node.childNodes !== void 0) {
                                     if (node.childNodes.length > 0) {
@@ -852,7 +842,6 @@
                                                 }
                                             } else if (typeof childNode.nodeValue === 'string') {
                                                 if (helpers.testReg(reg_model, childNode.nodeValue)) {
-                                                    validatePlaceHolder(node, model);
                                                     childNode.nodeValue = flex.unique();
                                                     convert.model.setAttrData(node, {
                                                         model   : model,
@@ -891,13 +880,15 @@
                             var inside_condition    = false,
                                 nodes               = [],
                                 included            = [],
-                                inside_included     = false;
+                                inside_included     = false,
+                                close_condition     = null;
                             try {
                                 Array.prototype.forEach.call(parent.childNodes, function (child) {
                                     var con_included = null;
                                     if (inside_condition) {
                                         if (child.nodeType === 8 && child.nodeValue === condition_name) {
-                                            inside_condition = null;
+                                            inside_condition    = null;
+                                            close_condition     = child;
                                             throw 'closed';
                                         } else {
                                             if (child.nodeType === 8 && helpers.testReg(settings.regs.CONDITION_STRUCTURE, child.nodeValue)) {
@@ -908,7 +899,7 @@
                                                 inside_included = true;
                                             } else if (child.nodeType === 8 && included.indexOf(child.nodeValue) !== -1) {
                                                 inside_included = false;
-                                            } else /*if (inside_included === false) */{
+                                            } else {
                                                 nodes.push(child);
                                             }
                                         }
@@ -932,7 +923,8 @@
                             }
                             return {
                                 nodes       : nodes,
-                                included    : included
+                                included    : included,
+                                close       : close_condition
                             };
                         },
                         find    : function (node){
@@ -950,7 +942,8 @@
                                                 found = convert.conditions.getNodes(condition.name, node, node.parentNode);
                                                 conditions[condition.name].push({
                                                     value       : condition.value,
-                                                    comment     : node,
+                                                    open        : node,
+                                                    close       : found.close,
                                                     nodes       : found.nodes,
                                                     included    : found.included
                                                 });
@@ -978,7 +971,9 @@
                                 _object(conditions).forEach(function (con_name, con_value) {
                                     if (con_value instanceof Array) {
                                         con_value.forEach(function (value, index) {
-                                            conditions[con_name][index].append = getAppend(value.comment);
+                                            conditions[con_name][index].append = getAppend(value.open);
+                                            add(value.open);
+                                            add(value.close);
                                         });
                                     }
                                 });
@@ -1320,7 +1315,7 @@
         };
         //END: pattern class ===============================================
         //BEGIN: instance class ===============================================
-        instance    = {
+        instance        = {
             proto   : function(privates){
                 var self        = this,         
                     privates    = privates,
@@ -1332,35 +1327,64 @@
                     controller  = null,
                     cloning     = null,
                     condition   = null,
-                    returning   = null;
+                    returning   = null,
+                    types       = {
+                        ExArray : flex.libraries.types.array.ExArray
+                    };
                 cloning     = {
-                    update          : function (_hooks, conditions) {
-                        var _hooks  = _hooks instanceof Array ? _hooks[0] : _hooks,
-                            map     = {};
+                    update          : function (_hooks, conditions, _map, predefined) {
+                        var _hooks      = _hooks instanceof Array ? (_hooks[0] !== void 0 ? _hooks[0] : {}) : _hooks,
+                            map         = _map !== void 0 ? (_map !== null ? _map : {}) : {},
+                            predefined  = predefined !== void 0 ? (predefined !== null ? predefined : null) : null;
                         _object(_hooks).forEach(function (hook_name, hook_value) {
-                            if (hook_value instanceof settings.classes.RESULT) {
-                                map['__' + hook_name + '__'] = hook_value.url;
+                            if (map[hook_name] === void 0) {
+                                if (hook_value instanceof settings.classes.RESULT) {
+                                    map['__' + hook_name + '__']    = hook_value.url;
+                                    map[hook_name]                  = hook_value.hooks_map();
+                                } else if (typeof hook_value === 'object') {
+                                    map[hook_name] = {};
+                                    map[hook_name] = cloning.update(hook_value, map[hook_name]['__conditions__'], map[hook_name],
+                                        predefined !== null ? (predefined[hook_name] !== void 0 ? predefined[hook_name].hooks : null) : null);
+                                } else {
+                                    map[hook_name] = true;
+                                }
                             } else {
-                                map[hook_name] = true;
+                                if (!(hook_value instanceof settings.classes.RESULT) && typeof hook_value === 'object') {
+                                    map[hook_name] = cloning.update(hook_value, map[hook_name]['__conditions__'], map[hook_name],
+                                        predefined !== null ? (predefined[hook_name] !== void 0 ? predefined[hook_name].hooks : null) : null);
+                                }
                             }
-                            map['__conditions__'] = conditions;
                         });
+                        map['__conditions__'] = conditions !== void 0 ? conditions : null;
+                        if (predefined !== null) {
+                            _object(predefined).forEach(function (hook_name, hook_value) {
+                                if (map['__' + hook_name + '__'] === void 0 && typeof hook_value === 'object' && hook_value.url !== void 0) {
+                                    map['__' + hook_name + '__'] = hook_value.url;
+                                    if (hook_value.hooks !== void 0) {
+                                        map[hook_name] = cloning.update(map[hook_name], null, null, hook_value.hooks);
+                                    }
+                                } else if (map['__' + hook_name + '__'] !== void 0 && typeof hook_value === 'object' && hook_value.url !== void 0) {
+                                    map[hook_name] = cloning.update(map[hook_name], null, null, hook_value.hooks);
+                                }
+                            });
+                        }
                         return map;
                     },
                     convertHooks    : function(hooks_map, hooks){
-                        var _hooks  = [],
-                            hooks   = hooks instanceof Array ? hooks : [hooks];
+                        var _hooks      = [],
+                            hooks       = hooks instanceof Array ? hooks : [hooks],
+                            _hooks_map  = cloning.update(hooks, hooks_map['__conditions__'], hooks_map);
                         hooks.forEach(function (_item) {
                             var item = {};
                             _object(_item).forEach(function (hook_name, hook_value) {
-                                if (hooks_map[hook_name] !== void 0) {
-                                    if (typeof hooks_map[hook_name] === 'boolean' && hooks_map[hook_name] === true) {
+                                if (_hooks_map[hook_name] !== void 0) {
+                                    if (typeof _hooks_map[hook_name] === 'boolean' && _hooks_map[hook_name] === true) {
                                         item[hook_name] = hook_value;
-                                    } else if (typeof hooks_map[hook_name] === 'object' && hooks_map['__' + hook_name + '__'] !== void 0 && typeof hook_value === 'object' && hook_value !== null) {
+                                    } else if (typeof _hooks_map[hook_name] === 'object' && _hooks_map['__' + hook_name + '__'] !== void 0 && typeof hook_value === 'object' && hook_value !== null) {
                                         item[hook_name] = caller.instance({
-                                            url         : hooks_map['__' + hook_name + '__'],
-                                            conditions  : hooks_map[hook_name]['__conditions__'],
-                                            hooks       : cloning.convertHooks(hooks_map[hook_name], hook_value)
+                                            url         : _hooks_map['__' + hook_name + '__'],
+                                            conditions  : _hooks_map[hook_name]['__conditions__'],
+                                            hooks       : cloning.convertHooks(_hooks_map[hook_name], hook_value)
                                         });
                                     } else {
                                         flex.logs.log(logs.instance.NO_URL_FOR_CLONE_HOOK + '(' + self.url + ')', flex.logs.types.WARNING);
@@ -1374,13 +1398,17 @@
                         });
                         return _hooks;
                     },
-                    clone           : function (hooks_map, hooks) {
-                        var _hooks = cloning.convertHooks(hooks_map, hooks),
-                            result = null;
+                    clone           : function (hooks_map, hooks, callback) {
+                        var _hooks      = cloning.convertHooks(hooks_map, hooks),
+                            result      = null,
+                            callback    = typeof callback === 'function' ? callback : null;
                         if (_hooks.length > 0) {
                             result = caller.instance({
-                                url     : self.url,
-                                hooks   : _hooks
+                                url         : self.url,
+                                hooks       : _hooks,
+                                callbacks   : {
+                                    success: callback
+                                }
                             }).render(true);
                             return result instanceof settings.classes.RESULT ? result.nodes() : null;
                         }
@@ -1406,17 +1434,23 @@
                         }
                         return _hooks;
                     },
-                    apply       : function (hooks, hook_setters, hooks_map) {
+                    apply       : function (hooks, hook_setters, hooks_map, predefined) {
                         if (hooks !== null) {
                             _object(hook_setters).forEach(function (key, hook_setter) {
-                                var value = null;
+                                var value               = null,
+                                    child_predefined    = predefined[key] !== void 0 ? (predefined[key].hooks !== void 0 ? predefined[key].hooks : null) : null,
+                                    child_hooks_map     = null;
                                 if (hooks[key] !== void 0) {
                                     if (hooks[key] instanceof settings.classes.RESULT) {
-                                        map.        current[key]                        = hooks[key].map();
+                                        map.        current         ['__' + key + '__'] = hooks[key].map().original;
                                         model.      current.model   ['__' + key + '__'] = hooks[key].model();
                                         model.      current.binds   ['__' + key + '__'] = hooks[key].binds();
-                                        dom.        current         ['__' + key + '__'] = hooks[key].dom();
-                                        hooks_map[key]                                  = hooks[key].hooks_map()
+                                        dom.        current         ['__' + key + '__'] = hooks[key].dom().original;
+                                        hooks_map[key]                                  = hooks[key].hooks_map();
+                                        if (child_predefined !== null) {
+                                            child_predefined = cloning.update(null, null, hooks_map[key], child_predefined);
+                                            hooks[key].hooks_map(child_predefined);
+                                        }
                                     }
                                     hook_setter(hooks[key]);
                                 } else {
@@ -1448,24 +1482,15 @@
                                 iteration[name] = value;
                             });
                         }
-                        if (map.map === null) {
-                            map.map = {};
-                        } else if (typeof map.map === 'object' && !(map.map instanceof Array)) {
-                            map.map = [map.map];
-                        }
-                        if (map.map instanceof Array) {
-                            map.map.push(iteration);
-                        } else {
-                            map.map = iteration;
-                        }
+                        map.map.push(iteration);
                     },
                     reset       : function(){
-                        map.map = null;
+                        map.map = [];
                     },
                     iteration   : function () {
                         map.current = {};
                     },
-                    collapse    : function () {
+                    collapse    : function (original) {
                         function convert(source) {
                             var storage = null;
                             if (source instanceof Array) {
@@ -1488,7 +1513,14 @@
                             }
                             return storage;
                         };
-                        return convert(map.map);
+                        return {
+                            map         : convert(original),
+                            original    : original,
+                            update      : function(){
+                                var _map = map.collapse(this.original);
+                                this.map = _map.map;
+                            }
+                        };
                     }
                 };
                 model       = {
@@ -1702,26 +1734,8 @@
                         };
                         model.map(clone, defaults);
                         bind(model.current.binds, model.current.model);
-                        if (model.model === null) {
-                            model.model = {};
-                        } else if (typeof model.model === 'object' && !(model.model instanceof Array)) {
-                            model.model = [model.model];
-                        }
-                        if (model.model instanceof Array) {
-                            model.model.push(model.current.model);
-                        } else {
-                            model.model = model.current.model;
-                        }
-                        if (model.binds === null) {
-                            model.binds = {};
-                        } else if (typeof model.binds === 'object' && !(model.binds instanceof Array)) {
-                            model.binds = [model.binds];
-                        }
-                        if (model.binds instanceof Array) {
-                            model.binds.push(model.current.binds);
-                        } else {
-                            model.binds = model.current.binds;
-                        }
+                        model.model.push(model.current.model);
+                        model.binds.push(model.current.binds);
                     },
                     clear       : function (clone) {
                         var model_nodes = _nodes('*[' + settings.css.attrs.MODEL_DATA + ']', false, clone).target;
@@ -1732,8 +1746,8 @@
                         }
                     },
                     reset       : function (){
-                        model.model = null;
-                        model.binds = null;
+                        model.model = [];
+                        model.binds = [];
                     },
                     iteration   : function () {
                         model.current = {
@@ -1756,6 +1770,83 @@
                             }
                         });
                         return defaults;
+                    },
+                    changes     : {
+                        attach: function (_instance, _nodes, _root) {
+                            var _model = null;
+                            if (_instance.model() instanceof Array) {
+                                _instance.model(new types.ExArray(_instance.model()));
+                                (function (_instance, _nodes, _root) {
+                                    _instance.model().bind('add', function (event) {
+                                        var clone   = null,
+                                            self    = this,
+                                            mark    = null;
+                                        //Create new
+                                        clone = cloning.clone(_instance.hooks_map(), event.item, function (collapced, res) {
+                                            //Update model references
+                                            self[event.index] = res.model;
+                                            //Update binds
+                                            _instance.binds().splice(event.index, 0, res.binds);
+                                            //Update dom
+                                            if (_instance.dom().original instanceof Array) {
+                                                _instance.dom().original.splice(event.index, 0, res.dom.original[0]);
+                                            }
+                                            //Update map
+                                            if (_instance.map().original instanceof Array) {
+                                                _instance.map().original.splice(event.index, 0, res.map.original[0]);
+                                            }
+                                            return false;
+                                        });
+                                        //Add to nodes list
+                                        _nodes.splice(event.index, 0, clone);
+                                        //Mount
+                                        if (_nodes.length > 1) {
+                                            if (event.index < _nodes.length - 1) {
+                                                mark = _nodes[event.index + 1][0];
+                                                if (mark.parentNode !== null) {
+                                                    clone.forEach(function (node) {
+                                                        mark.parentNode.insertBefore(node, mark);
+                                                    });
+                                                }
+                                            } else {
+                                                mark = _nodes[0][0];
+                                                if (mark.parentNode !== null) {
+                                                    clone.forEach(function (node) {
+                                                        mark.parentNode.appendChild(node);
+                                                    });
+                                                }
+                                            }
+                                        } else {
+                                            clone.forEach(function (node) {
+                                                _root.parentNode.insertBefore(node, _root);
+                                            });
+                                        }
+                                    });
+                                    _instance.model().bind('remove', function (event) {
+                                        var self    = this,
+                                            mark    = null;
+                                        //Unmount
+                                        if (_nodes[event.index] !== void 0 && _nodes[event.index] instanceof Array){
+                                            _nodes[event.index].forEach(function(node){
+                                                node.parentNode.removeChild(node);
+                                            });
+                                        }
+                                        //Remove from nodes list
+                                        _nodes.splice(event.index, 1);
+                                        //Remove from binds
+                                        _instance.binds().splice(event.index, 1);
+                                        //Remove from dom
+                                        if (_instance.dom().original instanceof Array) {
+                                            _instance.dom().original.splice(event.index, 1);
+                                        }
+                                        //Remove from map
+                                        if (_instance.map().original instanceof Array) {
+                                            _instance.map().original.splice(event.index, 1);
+                                        }
+                                    });
+                                }(_instance, _nodes, _root));
+                            }
+                        }
                     }
                 };
                 dom         = {
@@ -1767,29 +1858,26 @@
                                 _dom[key] = value;
                             });
                         }
-                        if (dom.dom === null) {
-                            dom.dom = {};
-                        } else if (typeof dom.dom === 'object' && !(dom.dom instanceof Array)) {
-                            dom.dom = [dom.dom];
-                        }
-                        if (dom.dom instanceof Array) {
-                            dom.dom.push(_dom);
-                        } else {
-                            dom.dom = _dom;
-                        }
+                        dom.dom.push(_dom);
                     },
-                    reset       : function(){
-                        dom.dom = null;
+                    reset       : function (){
+                        dom.dom = [];
                     },
                     iteration   : function () {
                         dom.current = {};
                     },
-                    collapse    : function () {
+                    collapse    : function (original) {
                         function process(source, storage, indexes) {
                             function addIndexes(nodes, indexes) {
                                 function toNodeList(nodeList, indexes) {
                                     Array.prototype.forEach.call(nodeList, function (node, index) {
                                         var __indexes = nodeList.length > 1 ? indexes.concat([index]) : indexes;
+                                        if (node[settings.other.INDEXES] !== void 0) {
+                                            if (indexes_reset.indexOf(node) === -1) {
+                                                indexes_reset.push(node);
+                                                delete node[settings.other.INDEXES];
+                                            }
+                                        }
                                         if (node[settings.other.INDEXES] === void 0 || node[settings.other.INDEXES].length < __indexes.length) {
                                             node[settings.other.INDEXES] = nodeList.length > 1 ? indexes.concat([index]) : indexes;
                                         }
@@ -1877,13 +1965,20 @@
                             }
                             return result;
                         };
-                        var _dom = {};
-                        if (dom.dom !== null) {
-                            process(dom.dom, _dom, []);
+                        var _dom            = [],
+                            indexes_reset   = [];
+                        if (original !== null) {
+                            process(original, _dom, []);
                         }
                         return {
-                            listed  : wrap(dom.dom),
-                            grouped: _dom
+                            listed  : wrap(original),
+                            grouped : _dom,
+                            original: original,
+                            update  : function(){
+                                var res         = dom.collapse(original);
+                                this.grouped    = res.grouped;
+                                this.listed     = res.listed;
+                            }
                         };
                     }
                 };
@@ -2008,65 +2103,107 @@
                     },
                 };
                 methods     = {
-                    build       : function (_hooks, _resources, _conditions, _component_url) {
-                        var nodes           = [],
-                            _map            = [],
-                            _binds          = [],
+                    build       : function (params) {
+                        var _model          = null,
                             clone           = null,
                             hooks_map       = null,
                             _instance       = null,
-                            _conditions     = condition.setDefault(_conditions);
-                        if (_hooks !== null) {
+                            _root           = document.createTextNode(''),
+                            nodes           = [_root],
+                            _nodes          = [];
+                        if (params.hooks !== null) {
                             map.        reset();
                             model.      reset();
                             dom.        reset();
-                            _hooks      = hooks.build(_hooks);
-                            hooks_map   = cloning.update(_hooks, _conditions);
-                            _hooks      = _hooks instanceof Array ? _hooks : [_hooks];
-                            _hooks.forEach(function (_hooks) {
-                                var conditions_dom = null;
-                                clone           = privates.pattern(condition.get(_hooks, _conditions), _conditions);
+                            params.conditions   = condition.setDefault(params.conditions),
+                            params.hooks        = hooks.build(params.hooks);
+                            hooks_map           = cloning.update(params.hooks, params.conditions, null, params.map);
+                            params.hooks        = params.hooks instanceof Array ? params.hooks : [params.hooks];
+                            params.hooks.forEach(function (_hooks) {
+                                var conditions_dom  = null;
+                                clone           = privates.pattern(condition.get(_hooks, params.conditions), params.conditions);
                                 map.        iteration();
                                 model.      iteration();
                                 dom.        iteration();
-                                hooks.      apply(_hooks, clone.setters, hooks_map);
+                                hooks.      apply(_hooks, clone.setters, hooks_map, params.map);
                                 map.        update(clone.clone);
                                 model.      update(clone.clone, model.getDefaults(_hooks, clone.setters));
                                 model.      clear(clone.clone);
                                 dom.        update(clone.dom);
                                 conditions_dom  = clone.applyConditions();
-                                nodes           = nodes.concat(Array.prototype.filter.call(clone.clone.childNodes, function () { return true; }));
-                                condition.tracking(_conditions, conditions_dom, _hooks);
+                                _nodes.push(Array.prototype.filter.call(clone.clone.childNodes, function () { return true; }));
+                                _nodes[_nodes.length - 1].push(document.createTextNode(''));
+                                nodes           = nodes.concat(_nodes[_nodes.length - 1]);
+                                condition.tracking(params.conditions, conditions_dom, _hooks);
                             });
                         }
                         _instance = result.instance({
                             url             : self.url,
                             nodes           : nodes,
-                            map             : map.map,
+                            map             : map.collapse(map.map),
                             model           : model.model,
                             binds           : model.binds,
-                            dom             : dom.dom,
+                            dom             : dom.collapse(dom.dom),
                             hooks_map       : hooks_map,
                             instance        : privates.__instance,
                             handle          : function (handle, _resources) { return methods.handle(handle, _instance, _resources); }
                         });
-                        controller.apply(_instance, _resources, _component_url);
+                        model.changes.attach(_instance, _nodes, _root);
+                        controller.apply(_instance, params.resources, params.component);
                         return _instance;
                     },
                     handle      : function (handle, _instance, _resources) {
+                        function collapse(res) {
+                            function procced(res) {
+                                if (res instanceof Array || res instanceof types.ExArray) {
+                                    res.forEach(function (val, index) {
+                                        res[index] = procced(val);
+                                    });
+                                    return res.length === 1 ? res[0] : res;
+                                } else if (typeof res === 'object') {
+                                    _object(res).forEach(function (key, value) {
+                                        if (key.indexOf('__') !== -1) {
+                                            if (value instanceof Array || value instanceof types.ExArray) {
+                                                value.forEach(function (val, index) {
+                                                    res[key][index] = procced(val);
+                                                });
+                                                res[key] = value.length === 1 ? value[0] : value;
+                                            } else if (typeof value === 'object') {
+                                                res[key] = procced(value);
+                                            }
+                                        }
+                                    });
+                                    return res;
+                                }
+                            }
+                            return {
+                                model       : procced(res.model),
+                                binds       : procced(res.binds),
+                                map         : procced(res.map.map),
+                                dom         : {
+                                    grouped : procced(res.dom.grouped),
+                                    listed  : procced(res.dom.listed),
+                                },
+                                resources   : res.resources
+                            };
+                        };
+                        var collapsed   = null,
+                            uncollapsed = null;
                         if (typeof handle === 'function') {
-                            handle.call(_instance, {
-                                model       : model.model,
-                                binds       : model.binds,
-                                map         : map.collapse(),
-                                dom         : dom.collapse(),
+                            uncollapsed = {
+                                model       : _instance.model(),
+                                binds       : _instance.binds(),
+                                map         : _instance.map(),
+                                dom         : _instance.dom(),
                                 resources   : _resources,
-                            });
+                            };
+                            collapsed = collapse(uncollapsed);
+                            handle.call(_instance, collapsed, uncollapsed);
                         }
                     },
-                    bind        : function (hooks, resources, conditions, component_url) {
+                    bind        : function (params) {
                         return function () {
-                            return methods.build(hooks, resources, conditions, component_url);
+                            return methods.build(params);
                         };
                     }
                 };
@@ -2313,7 +2450,7 @@
         };
         //END: instance class ===============================================
         //BEGIN: result class ===============================================
-        result      = {
+        result          = {
             proto       : function (privates) {
                 var mount       = null,
                     returning   = null,
@@ -2359,10 +2496,10 @@
                 };
                 returning   = {
                     nodes           : function () { return privates.nodes;          },
-                    map             : function () { return privates.map;            },
-                    model           : function () { return privates.model;          },
-                    dom             : function () { return privates.dom;            },
-                    binds           : function () { return privates.binds;          },
+                    map             : function (map     ) { (map    !== void 0) && (privates.map    = map   ); return privates.map;     },
+                    model           : function (model   ) { (model  !== void 0) && (privates.model  = model ); return privates.model;   },
+                    dom             : function (dom     ) { (dom    !== void 0) && (privates.dom    = dom   ); return privates.dom;     },
+                    binds           : function (binds   ) { (binds  !== void 0) && (privates.binds  = binds ); return privates.binds;   },
                     handle          : function () { return privates.handle;         },
                     hooks_map       : function () { return privates.hooks_map;      },
                     instance        : function () { return privates.instance;       },
@@ -2416,7 +2553,7 @@
         };
         //END: result class ===============================================
         //BEGIN: caller class ===============================================
-        caller      = {
+        caller          = {
             proto   : function (privates){
                 var self        = this,
                     mount       = null,
@@ -2450,7 +2587,7 @@
                     },
                 };
                 component   = {
-                    getStructure    : function(html){
+                    getStructure    : function (html){
                         function analysis(nodes, storage) {
                             Array.prototype.forEach.call(nodes, function (node) {
                                 var sub     = node.nodeName.toLowerCase(),
@@ -2480,9 +2617,12 @@
                         function buildCaller(structure, hooks, callers) {
                             function add(_item, _hooks, structure, key) {
                                 _object(_item).forEach(function (hook_name, hook_value) {
+                                    _hooks[hook_name] = hook_value;
+                                    /*
                                     if (typeof hook_value !== 'object') {
                                         _hooks[hook_name] = hook_value;
                                     }
+                                    */
                                 });
                                 if (structure[key].sub !== void 0) {
                                     buildCaller(structure[key].sub, _item, _hooks);
@@ -2525,7 +2665,7 @@
                             return false;
                         }
                     },
-                    addGetters      : function(callers){
+                    addGetters      : function (callers){
                         if (callers.hooks !== void 0) {
                             if (callers.hooks instanceof Array) {
                                 callers.hooks.forEach(function (item, index) {
@@ -2582,7 +2722,13 @@
                                 throw logs.caller.CANNOT_GET_CHILD_PATTERN;
                             } else {
                                 hooks.apply(_hooks);
-                                return _instance.bind(_hooks, value.resources(), value.conditions(), value.component());
+                                return _instance.bind({
+                                    hooks       : _hooks,
+                                    resources   : value.resources(),
+                                    conditions  : value.conditions(),
+                                    component   : value.component(),
+                                    map         : value.map()
+                                });
                             }
                         }
                     },
@@ -2640,10 +2786,27 @@
                         patterns.find(privates.hooks);
                         source.init(
                             (function () {
+                                function getPredefined(map) {
+                                    if (typeof map === 'object') {
+                                        _object(map).forEach(function (key, value) {
+                                            var url = null;
+                                            if (value.url !== void 0) {
+                                                url = flex.system.url.restore(value.url);
+                                                if (list.indexOf(url) === -1) {
+                                                    list.push(url);
+                                                }
+                                                if (value.hooks !== void 0) {
+                                                    getPredefined(value.hooks);
+                                                }
+                                            }
+                                        });
+                                    }
+                                };
                                 var list = [];
                                 _object(privates.patterns).forEach(function (url) {
                                     list.push(url);
                                 });
+                                getPredefined(privates.map);
                                 return list;
                             }()),
                             function (sources) {
@@ -2656,7 +2819,13 @@
                                     hooks.apply();
                                     privates.pattern = instance.init(self.url);
                                     if (privates.pattern !== null) {
-                                        privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions, privates.component);
+                                        privates.pattern = privates.pattern.build({
+                                            hooks       : privates.hooks,
+                                            resources   : privates.resources,
+                                            conditions  : privates.conditions,
+                                            component   : privates.component,
+                                            map         : privates.map,
+                                        });
                                         if (privates.pattern instanceof settings.classes.RESULT) {
                                             privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
                                             if (privates.callbacks.success !== null) {
@@ -2680,8 +2849,15 @@
                         hooks.apply();
                         privates.pattern = instance.init(self.url);
                         if (privates.pattern !== null) {
-                            privates.pattern = privates.pattern.build(privates.hooks, privates.resources, privates.conditions, privates.component);
+                            privates.pattern = privates.pattern.build({
+                                hooks       : privates.hooks,
+                                resources   : privates.resources,
+                                conditions  : privates.conditions,
+                                component   : privates.component,
+                                map         : privates.map,
+                            });
                             if (privates.pattern instanceof settings.classes.RESULT) {
+                                privates.pattern.handle()(privates.callbacks.success, privates.resources);
                                 return privates.pattern;
                             }
                         }
@@ -2696,6 +2872,7 @@
                     resources   : function () { return privates.resources;  },
                     conditions  : function () { return privates.conditions; },
                     component   : function () { return privates.component;  },
+                    map         : function () { return privates.map;        },
                 };
                 return {
                     render      : returning.render,
@@ -2703,6 +2880,7 @@
                     conditions  : returning.conditions,
                     resources   : returning.resources,
                     component   : returning.component,
+                    map         : returning.map,
                 };
             },
             instance: function (parameters) {
@@ -2714,7 +2892,6 @@
                 ///     [string || node]    node                    (target node for mount),                                            &#13;&#10;
                 ///     [boolean]           replace                 (true - replace node by template; false - append template to node), &#13;&#10;
                 ///     [object || array]   hooks                   (bind data),                                                        &#13;&#10;
-                ///     [array]             data                    (bind data for collection),                                         &#13;&#10;
                 ///     [object]            conditions              (conditions),                                                       &#13;&#10;
                 ///     [object]            callbacks               (callbacks),                                                        &#13;&#10;
                 ///     [object]            resources               (callbacks),                                                        &#13;&#10;
@@ -2729,9 +2906,9 @@
                                                             { name: 'id',                   type: 'string',                                     value: flex.unique()},
                                                             { name: 'replace',              type: 'boolean',                                    value: false        },
                                                             { name: 'hooks',                type: ['object', 'array'],                          value: null         },
-                                                            { name: 'data',                 type: 'array',                                      value: null         },
                                                             { name: 'conditions',           type: 'object',                                     value: null         },
                                                             { name: 'callbacks',            type: 'object',                                     value: {}           },
+                                                            { name: 'map',                  type: 'object',                                     value: {}           },
                                                             { name: 'resources',            type: 'object',                                     value: {}           },
                                                             { name: 'remove_missing_hooks', type: 'boolean',                                    value: true         },
                                                             //For internal usage
@@ -2754,10 +2931,11 @@
                             after               : parameters.after  !== null ? (typeof parameters.after     === 'string' ? _nodes(parameters.after  ).target : (parameters.after    instanceof Array ? parameters.after     : (parameters.after     instanceof NodeList ? parameters.after  : [parameters.after]    ))) : null,
                             replace             : parameters.replace,
                             hooks               : parameters.hooks,
-                            data                : parameters.data,
                             conditions          : parameters.conditions,
                             callbacks           : parameters.callbacks,
+                            resources           : parameters.resources,
                             remove_missing_hooks: parameters.remove_missing_hooks,
+                            map                 : parameters.map,
                             resources           : parameters.resources,
                             //Local
                             component           : parameters.component,
@@ -2771,7 +2949,7 @@
             }
         };
         //END: caller class ===============================================
-        layout      = {
+        layout          = {
             init    : function (is_auto){
                 function isValid(pattern) {
                     var nodeName = pattern.parentNode.nodeName.toLowerCase();
@@ -2890,7 +3068,7 @@
                 }
             }
         };
-        controllers = {
+        controllers     = {
             references  : {
                 assign          : function (url, pattern_url) {
                     var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.CONTROLLERS_LINKS, {});
@@ -2947,7 +3125,7 @@
                 }
             },
         };
-        storage     = {
+        storage         = {
             virtual: {
                 add: function (url, content) {
                     var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.VIRTUAL_STORAGE_ID, {});
@@ -3002,7 +3180,7 @@
                 return result;
             }
         };
-        measuring   = {
+        measuring       = {
             measure: (function () {
                 var storage = {};
                 return function (id, operation) {
@@ -3019,7 +3197,7 @@
                 };
             }())
         };
-        conditions  = {
+        conditions      = {
             storage : {
                 add: function (pattern_url, _conditions) {
                     var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.CONDITIONS_STORAGE, {});
@@ -3042,7 +3220,7 @@
                 }
             }
         };
-        defaultshooks = {
+        defaultshooks   = {
             storage : {
                 add: function (pattern_url, _hooks) {
                     var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.HOOKS_STORAGE, {});
@@ -3065,7 +3243,7 @@
                 }
             }
         };
-        helpers     = {
+        helpers         = {
             testReg     : function(reg, str){
                 reg.lastIndex = 0;
                 return reg.test(str);
@@ -3158,7 +3336,7 @@
                 return target;
             }
         };
-        callers     = {
+        callers         = {
             init    : function () {
                 flex.callers.define.node('ui.patterns.append', function (parameters) {
                     if (typeof parameters === 'object' && this.target) {
@@ -3251,34 +3429,32 @@
                         Handle      = null,
                         privates    = null;
                     //Handle class
-                    Handle              = function (id, handle, once, touch) {
+                    Handle              = function (id, handle, once, touch, safely) {
                         this.id             = id;
                         this.handle         = handle;
                         this.once           = once;
                         this.touch          = touch;
+                        this.safely         = safely;
                         this.remove         = false;
                         this.interaction    = null;
                         this.working        = false;
                         this.device         = null;
                     };
                     Handle.prototype    = {
-                        id          : null,
-                        once        : null,
-                        touch       : null,
-                        remove      : null,
-                        handle      : null,
-                        interaction : null,
-                        working     : null,
-                        device      : null,
                         launch      : function (context, event) {
+                            var error = null;
                             if (this.remove === false && this.isDouble(event) === false) {
                                 try {
-                                    this.working    = true;
-                                    this.remove     = this.once;
+                                    this.working = true;
+                                    this.remove = this.once;
                                     return this.handle.call(context, event);
                                 } catch (e) {
-                                    this.error(event, e);
-                                    return null;
+                                    if (this.safely) {
+                                        this.error(event, e);
+                                        return null;
+                                    } else {
+                                        error = e;
+                                    }
                                 } finally {
                                     this.working = false;
                                     if (this.once === true && this.remove === false) {
@@ -3288,6 +3464,9 @@
                                             flex.logs.types.WARNING
                                         );
                                     }
+                                }
+                                if (error !== null) {
+                                    throw error;
                                 }
                             }
                             return null;
@@ -3328,8 +3507,9 @@
                         ///     [string]    name,                                                   &#13;&#10;
                         ///     [function]  handle,                                                 &#13;&#10;
                         ///     [string]    id     (optional),                                      &#13;&#10;
-                        ///     [boolean]   once   (optional) -> true - remove after handle will be once used}</param>
-                        ///     [boolean]   touch  (optional) -> true - try find analog of touch event and attach it}</param>
+                        ///     [boolean]   once   (optional, def:false) -> true - remove after handle will be once used}</param>
+                        ///     [boolean]   touch  (optional, def:false) -> true - try find analog of touch event and attach it}</param>
+                        ///     [boolean]   safely (optional, def:false) -> true - will block all throws and show log in console instead.}</param>
                         /// <returns type="boolean">true if success and false if fail</returns>
                         function validate(parameters) {
                             parameters.element  = parameters.element        !== void 0      ? parameters.element    : null;
@@ -3338,6 +3518,7 @@
                             parameters.id       = typeof parameters.id      === 'string'    ? parameters.id         : flex.unique();
                             parameters.once     = typeof parameters.once    === 'boolean'   ? parameters.once       : false;
                             parameters.touch    = typeof parameters.touch   === 'boolean'   ? parameters.touch      : true;
+                            parameters.safely   = typeof parameters.safely  === 'boolean'   ? parameters.safely     : false;
                             //Prevent double attaching for touch events
                             if (touches.has(parameters.name) === false) {
                                 parameters.touch = false;
@@ -3349,7 +3530,7 @@
                         if (parameters.element !== null && parameters.handle !== null && parameters.name !== null) {
                             handles = storage.get(parameters.element, false);
                             if (handles !== null) {
-                                handles = tools.buildCommonHandle(parameters.element, parameters.name, handles, parameters.touch);
+                                handles = tools.buildCommonHandle(parameters.element, parameters.name, handles, parameters.touch, parameters.safely);
                                 if (handles instanceof Array) {
                                     handles.push(
                                         new Handle(parameters.id, parameters.handle, parameters.once, parameters.touch)
@@ -3360,7 +3541,7 @@
                         }
                         return null;
                     };
-                    function fire(element, event, element_id, original_type) {
+                    function fire(element, event, element_id, original_type, safely) {
                         /// <summary>
                         /// Common handle of events
                         /// </summary>
@@ -3375,7 +3556,8 @@
                             isPrevent           = null,
                             self                = this,
                             needRemoveChecking  = false,
-                            event_type          = (event.type !== original_type ? original_type : event.type);
+                            event_type          = (event.type !== original_type ? original_type : event.type),
+                            error               = null;
                         if (event && element && element_id && handles_storage !== null) {
                             event = tools.unificationEvent(event);
                             if (handles_storage[event_type]) {
@@ -3414,12 +3596,16 @@
                                         );
                                     } catch (e) {
                                         if (e !== 'prevent') {
-                                            flex.logs.log(
-                                                'Unexpected error in DOM.fire; \n\r ' +
-                                                '>event: '      + event.type + '\n\r ' +
-                                                '>element_id'   + element_id,
-                                                flex.logs.types.CRITICAL
-                                            );
+                                            if (safely) {
+                                                flex.logs.log(
+                                                    'Unexpected error in DOM.fire; \n\r ' +
+                                                    '>event: ' + event.type + '\n\r ' +
+                                                    '>element_id' + element_id,
+                                                    flex.logs.types.CRITICAL
+                                                );
+                                            } else {
+                                                error = e;
+                                            }
                                         }
                                     } finally {
                                         if (needRemoveChecking !== false) {
@@ -3438,8 +3624,11 @@
                                                 storage.clear(element);
                                             }
                                         }
-                                        return true;
                                     }
+                                    if (error !== null) {
+                                        throw error;
+                                    }
+                                    return true;
                                 }
                             }
                         }
@@ -3680,7 +3869,7 @@
                         }
                     };
                     tools = {
-                        buildCommonHandle   : function (element, type, storage, touch) {
+                        buildCommonHandle   : function (element, type, storage, touch, safely) {
                             /// <summary>
                             /// Build common handle for element for defined event
                             /// </summary>
@@ -3692,7 +3881,7 @@
                             if (typeof storage[type] !== "object") {
                                 storage[type] = {
                                     globalHandle    : function (event) {
-                                        return fire.call(element, element, event, element_id, type);
+                                        return fire.call(element, element, event, element_id, type, safely);
                                     },
                                     element_id      : element_id,
                                     handles         : []
@@ -3889,13 +4078,14 @@
                     privates = {
                         _add    : add,
                         _remove : remove,
-                        add     : function (element, type, handle, id, touch) {
+                        add     : function (element, type, handle, id, touch, safely) {
                             return add({
                                 element : element,
                                 name    : type,
                                 handle  : handle,
                                 id      : id,
-                                touch   : touch
+                                touch   : touch,
+                                safely  : safely
                             });
                         },
                         remove  : function (element, type, handle, id) {
@@ -6660,6 +6850,293 @@
             position    : privates.position,
             units       : units,
             helpers     : privates.helpers
+        };
+    };
+    //=== Flex extended types and classes ===
+    Types.array.prototype   = function () {
+        var privates        = null,
+            ExArray         = null;
+        ExArray     = function (defaults) {
+            var self        = this,
+                original    = [],
+                handles     = {
+                    'set'       : {},
+                    'add'       : {},
+                    'remove'    : {}
+                },
+                aliases     = {
+                    'set'   : ['update'],
+                    'add'   : ['new', 'push', 'unshift'],
+                    'remove': ['del', 'delete', 'shift', 'pop'],
+                },
+                errors      = {
+                    WRONG_EVENT_NAME        : '0000: WRONG_EVENT_NAME',
+                    HANDLE_ISNOT_FUNCTION   : '0001: HANDLE_ISNOT_FUNCTION',
+                    SAME_ID_OF_HANDLE       : '0002: SAME_ID_OF_HANDLE',
+                    HANDLE_OR_ID_SHOULD_BE  : '0003: HANDLE_OR_ID_SHOULD_BE',
+                    INVALID_LENGTH          : '0004: INVALID_LENGTH'
+                };
+            function getEventName(type) {
+                var result = handles[type] !== void 0 ? type : null;
+                if (result === null) {
+                    for (var key in aliases) {
+                        if (aliases[key].indexOf(type) !== -1) {
+                            result = key;
+                            break;
+                        }
+                    }
+                }
+                return result;
+            }
+            function executeHandles(event) {
+                _object(handles[event.type]).forEach(function (id, handle) {
+                    handle.call(self, event);
+                });
+            }
+            function setIndex(index) {
+                if (self[index] === void 0) {
+                    Object.defineProperty(self, index, {
+                        configurable: true,
+                        enumerable  : true,
+                        get         : function () {
+                            return original[index];
+                        },
+                        set         : function (value) {
+                            original[index] = value;
+                            executeHandles({
+                                type    : 'set',
+                                index   : index,
+                                item    : value
+                            });
+                        }
+                    });
+                }
+            }
+            Object.defineProperty(self, "bind", {
+                configurable: false,
+                enumerable  : false,
+                writable    : false,
+                value       : function (type, handle, id) {
+                    type = getEventName(type);
+                    if (type !== null) {
+                        if (typeof handle === 'function') {
+                            id = typeof id === 'string' ? id : flex.unique();
+                            if (handles[type][id] === void 0) {
+                                handles[type][id] = handle;
+                            } else {
+                                throw new Error(errors.SAME_ID_OF_HANDLE);
+                            }
+                        } else {
+                            throw new Error(errors.HANDLE_ISNOT_FUNCTION);
+                        }
+                    } else {
+                        throw new Error(errors.WRONG_EVENT_NAME);
+                    }
+                }
+            });
+            Object.defineProperty(self, "unbind", {
+                configurable: false,
+                enumerable  : false,
+                writable    : false,
+                value       : function (type, handle_or_id) {
+                    type = getEventName(type);
+                    if (type !== null) {
+                        if (typeof handle_or_id === 'function') {
+                            for (var id in handles[type]) {
+                                if (handles[type][id] === handle_or_id) {
+                                    delete handles[type][id];
+                                    return true;
+                                }
+                            }
+                            return false;
+                        } else if (typeof handle_or_id === 'string') {
+                            if (handles[type][handle_or_id] !== void 0) {
+                                delete handles[type][handle_or_id];
+                                return true;
+                            }
+                            return false;
+                        } else {
+                            throw new Error(errors.HANDLE_OR_ID_SHOULD_BE);
+                        }
+                    } else {
+                        throw new Error(errors.WRONG_EVENT_NAME);
+                    }
+                }
+            });
+            Object.defineProperty(self, "pop", {
+                configurable    : false,
+                enumerable      : false,
+                writable        : false,
+                value           : function () {
+                    if (original.length > -1) {
+                        var item = original.pop();
+                        delete self[original.length];
+                        executeHandles({
+                            type    : "remove",
+                            index   : original.length,
+                            item    : item
+                        });
+                        return item;
+                    }
+                }
+            });
+            Object.defineProperty(self, "push", {
+                configurable: false,
+                enumerable  : false,
+                writable    : false,
+                value       : function () {
+                    for (var i = 0, length = arguments.length; i < length; i++) {
+                        original.push(arguments[i]);
+                        setIndex(original.length - 1);
+                        executeHandles({
+                            type    : "add",
+                            index   : original.length - 1,
+                            item    : arguments[i]
+                        });
+                    }
+                    return original.length;
+                }
+            });
+            Object.defineProperty(self, "unshift", {
+                configurable: false,
+                enumerable  : false,
+                writable    : false,
+                value       : function () {
+                    for (var i = 0, ln = arguments.length; i < ln; i++) {
+                        original.splice(i, 0, arguments[i]);
+                        setIndex(original.length - 1);
+                        executeHandles({
+                            type    : "add",
+                            index   : i,
+                            item    : arguments[i]
+                        });
+                    }
+                    for (; i < original.length; i++) {
+                        executeHandles({
+                            type    : "set",
+                            index   : i,
+                            item    : original[i]
+                        });
+                    }
+                    return original.length;
+                }
+            });
+            Object.defineProperty(self, "shift", {
+                configurable: false,
+                enumerable  : false,
+                writable    : false,
+                value       : function () {
+                    var item = null;
+                    if (original.length > 0) {
+                        item = original.shift();
+                        original.length === 0 && delete self[0];
+                        executeHandles({
+                            type    : "remove",
+                            index   : 0,
+                            item    : item
+                        });
+                        return item;
+                    }
+                }
+            });
+            Object.defineProperty(self, "splice", {
+                configurable    : false,
+                enumerable      : false,
+                writable        : false,
+                value           : function (start, count /*, item_0, item_1, ... item_n */) {
+                    var removed = [],
+                        item    = null,
+                        _start  = null;
+                    start   = start !== void 0 ? (start > original.length - 1 ? original.length : start) : 0;
+                    count   = count !== void 0 ? count : original.length - start;
+                    _start  = start < 0 ? original.length + start : start;
+                    while (count--) {
+                        item = original.splice(_start, 1)[0];
+                        removed.push(item);
+                        delete self[original.length];
+                        executeHandles({
+                            type    : "remove",
+                            index   : start + removed.length - 1,
+                            item    : item
+                        });
+                    }
+                    for (var i = 2, ln = arguments.length; i < ln; i++) {
+                        original.splice(_start, 0, arguments[i]);
+                        setIndex(original.length - 1);
+                        executeHandles({
+                            type    : "add",
+                            index   : _start,
+                            item    : arguments[i]
+                        });
+                        _start++;
+                    }
+                    return removed;
+                }
+            });
+            Object.defineProperty(self, "fill", {
+                configurable    : false,
+                enumerable      : false,
+                writable        : false,
+                value           : function (value, start, end) {
+                    var O               = Object(original),
+                        start           = start === void 0 ? 0 : start,
+                        end             = end === void 0 ? original.length : end,
+                        len             = O.length >>> 0,
+                        relativeStart   = start >> 0,
+                        k               = relativeStart < 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len),
+                        relativeEnd     = end === undefined ? len : end >> 0,
+                        final           = relativeEnd < 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
+                    while (k < final) {
+                        O[k] = value;
+                        executeHandles({
+                            type    : "set",
+                            index   : k,
+                            item    : value
+                        });
+                        k++;
+                    }
+                    return O;
+                }
+            });
+            Object.defineProperty(self, "length", {
+                configurable: false,
+                enumerable  : false,
+                get         : function () {
+                    return original.length;
+                },
+                set         : function (value) {
+                    var n = Number(value);
+                    if (n % 1 === 0 && n >= 0) {
+                        if (n < original.length) {
+                            self.splice(n);
+                        } else if (n > original.length) {
+                            self.push.apply(self, new Array(n - original.length));
+                        }
+                    } else {
+                        throw new RangeError(errors.INVALID_LENGTH);
+                    }
+                    return value;
+                }
+            });
+            Object.getOwnPropertyNames(Array.prototype).forEach(function (name) {
+                if (self[name] === void 0) {
+                    Object.defineProperty(self, name, {
+                        configurable: false,
+                        enumerable  : false,
+                        writable    : false,
+                        value       : Array.prototype[name]
+                    });
+                }
+            });
+            if (defaults instanceof Array) {
+                self.push.apply(self, defaults);
+            }
+        };
+        privates    = {
+            ExArray: ExArray
+        };
+        return {
+            ExArray: privates.ExArray
         };
     };
     //=== Core module ===
@@ -9979,6 +10456,7 @@
     Move.prototype          = Move.prototype();
     Resize.prototype        = Resize.prototype();
     Maximize.prototype      = Maximize.prototype();
+    Types.array.prototype   = Types.array.prototype();
     //Init libraries
     window['flex'].libraries = {
         events  : new Events(),
@@ -9992,6 +10470,9 @@
                 focus   : new Focus()
             },
             patterns: new Patterns(),
+        },
+        types   : {
+            array : new Types.array()
         }
     };
     //Define other short callers
