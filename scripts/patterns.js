@@ -1,8 +1,5 @@
 ﻿// LICENSE 
 // This file (core / module) is released under the MIT License. See [LICENSE] file for details.
-/*TODO:
-- add clone mount methods
-*/
 (function(){
     "use strict";
     //Modules declarations
@@ -1410,7 +1407,7 @@
                                     success: callback
                                 }
                             }).render(true);
-                            return result instanceof settings.classes.RESULT ? result.nodes() : null;
+                            return result instanceof settings.classes.RESULT ? result.nodeList() : null;
                         }
                     }
                 };
@@ -1798,28 +1795,22 @@
                                             return false;
                                         });
                                         //Add to nodes list
-                                        _nodes.splice(event.index, 0, clone);
+                                        _nodes.splice(event.index, 0, clone.getAsArray());
                                         //Mount
                                         if (_nodes.length > 1) {
                                             if (event.index < _nodes.length - 1) {
                                                 mark = _nodes[event.index + 1][0];
                                                 if (mark.parentNode !== null) {
-                                                    clone.forEach(function (node) {
-                                                        mark.parentNode.insertBefore(node, mark);
-                                                    });
+                                                    clone.insertBefore(mark);
                                                 }
                                             } else {
                                                 mark = _nodes[0][0];
                                                 if (mark.parentNode !== null) {
-                                                    clone.forEach(function (node) {
-                                                        mark.parentNode.appendChild(node);
-                                                    });
+                                                    clone.append(mark.parentNode);
                                                 }
                                             }
                                         } else {
-                                            clone.forEach(function (node) {
-                                                _root.parentNode.insertBefore(node, _root);
-                                            });
+                                            clone.insertBefore(_root);
                                         }
                                     });
                                     _instance.model().bind('remove', function (event) {
@@ -2356,11 +2347,11 @@
                                 });
                             }
                         },
-                        insertBefore: function (parent, before) {
-                            if (typeof parent.insertBefore === 'function' && helpers.isNode(before)) {
+                        insertBefore: function (before) {
+                            if (before.parentNode !== void 0 && before.parentNode !== null && typeof before.parentNode.insertBefore === 'function' && helpers.isNode(before)) {
                                 this.collections.forEach(function (nodeList) {
                                     Array.prototype.forEach.call(nodeList, function (node) {
-                                        parent.insertBefore(node, before);
+                                        before.parentNode.insertBefore(node, before);
                                     });
                                 });
                             }
@@ -2408,6 +2399,7 @@
                                     result.push(node);
                                 });
                             });
+                            return result;
                         }
                     };
                 },
@@ -2454,7 +2446,8 @@
             proto       : function (privates) {
                 var mount       = null,
                     returning   = null,
-                    clone       = null;
+                    clone       = null,
+                    getNodeList = null;
                 clone       = function (hooks) {
                     return privates.instance.clone(privates.hooks_map, hooks);
                 };
@@ -2494,8 +2487,19 @@
                     }
                     flex.events.core.fire(flex.registry.events.ui.patterns.GROUP, flex.registry.events.ui.patterns.MOUNTED, privates.nodes);
                 };
+                getNodeList = function () {
+                    var nodeList = null;
+                    if (privates.nodes instanceof Array) {
+                        nodeList = instance.nodeList.create();
+                        privates.nodes.forEach(function (node) {
+                            nodeList.add(node);
+                        });
+                    }
+                    return nodeList;
+                };
                 returning   = {
                     nodes           : function () { return privates.nodes;          },
+                    nodeList        : function () { return getNodeList();           },
                     map             : function (map     ) { (map    !== void 0) && (privates.map    = map   ); return privates.map;     },
                     model           : function (model   ) { (model  !== void 0) && (privates.model  = model ); return privates.model;   },
                     dom             : function (dom     ) { (dom    !== void 0) && (privates.dom    = dom   ); return privates.dom;     },
@@ -2508,6 +2512,7 @@
                 };
                 return {
                     nodes       : returning.nodes,
+                    nodeList    : returning.nodeList,
                     mount       : returning.mount,
                     map         : returning.map,
                     dom         : returning.dom,
