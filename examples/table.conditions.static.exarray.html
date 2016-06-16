@@ -43,6 +43,8 @@
                         };
                         function remove(event) {
                             rows.splice(event.target.__indexes[0], 1);
+                            uncollapsed.map.update();
+                            uncollapsed.dom.update();
                         };
                         var rows = uncollapsed.model[0].__rows__;
                         _node('a[id="add_row"]').events().add('click', add);
