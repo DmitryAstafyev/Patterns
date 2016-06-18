@@ -28,8 +28,8 @@
                 },
                 callbacks: {
                     success: function (collapsed, uncollapsed) {
-                        function add(event) {
-                            var index = event.target.__indexes !== void 0 ? event.target.__indexes[0] : rows.length - 1;
+                        function add(event, indexes) {
+                            var index = indexes !== void 0 ? indexes[0] : rows.length - 1;
                             rows.splice(index + 1, 0, {
                                 column_0: (Math.random() * 1000).toFixed(4),
                                 column_1: (Math.random() * 1000).toFixed(4),
@@ -41,8 +41,8 @@
                             uncollapsed.dom.listed[0].__rows__[index + 1].add.on('click', add);
                             uncollapsed.dom.listed[0].__rows__[index + 1].remove.on('click', remove);
                         };
-                        function remove(event) {
-                            rows.splice(event.target.__indexes[0], 1);
+                        function remove(event, indexes) {
+                            rows.splice(indexes[0], 1);
                             uncollapsed.map.update();
                             uncollapsed.dom.update();
                         };

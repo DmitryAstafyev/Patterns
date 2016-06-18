@@ -2384,8 +2384,9 @@
                                 this.collections.forEach(function (nodeList) {
                                     Array.prototype.forEach.call(nodeList, function (node) {
                                         var target = instance.nodeList.create(node);
-                                        target.indexes = node[settings.other.INDEXES];
-                                        flex.events.DOM.add(node, event, handle.bind(target));
+                                        flex.events.DOM.add(node, event, function (event) { 
+                                            handle.call(target, event, node[settings.other.INDEXES]);
+                                        });
                                     });
                                 });
                             } else {
@@ -7203,27 +7204,27 @@
                 LOCAL_STORAGE_NAME : 'flex.hash.storage'
             },
             files       : {
-                CORE    : 'patterns.js', //This is default value, will be apply in case of fail auto-detection
+                CORE    : '', //This is default value, will be apply in case of fail auto-detection
                 CORE_URL: '',
                 detect  : function () {
                     function accept(url) {
-                        url = system.url.parse(url.toLowerCase());
-                        options.files.CORE = url.target;
-                        options.files.CORE_URL = url.url;
-                        url = url.path;
+                        url                     = system.url.parse(url.toLowerCase());
+                        options.files.CORE      = url.target;
+                        options.files.CORE_URL  = url.url;
+                        url                     = url.path;
                         return url;
                     };
-                    var url     = system.resources.js.getCurrentSRC(),
+                    var url     = system.resources.js.getCurrentSRC(true),
                         script  = null;
                     if (url !== null) {
                         return accept(url);
-                    } else {
+                    } else if (options.files.CORE !== '') {
                         script = document.querySelector('script[src*="' + options.files.CORE + '"]');
                         if (script !== null) {
                             return accept(script.src);
                         }
                     }
-                    throw new Error('Cannot detect URL and PATH to core script (default name: flex.core.js)');
+                    throw new Error('Cannot detect URL and PATH to core script. Setup name of manually [options.files.CORE]');
                 }
             },
             other       : {
@@ -9554,20 +9555,19 @@
                             }
                         }
                     },
-                    getCurrentSRC   : function () {
+                    getCurrentSRC   : function (detect_core) {
                         ///     <summary>Try to get URL of current (running) script</summary>
                         ///     <returns type="STRING">URL</returns>
-                        var urls = null;
+                        var urls        = null,
+                            detect_core = typeof detect_core === 'boolean' ? detect_core : false;
                         try {
                             throw new Error('Script URL detection');
-                        }
-                        catch (e) {
+                        } catch (e) {
                             if (typeof e.stack === 'string') {
                                 urls = e.stack.match(options.regs.urls.JS_URL);
                                 if (urls instanceof Array) {
                                     if (urls.length > 0) {
-                                        //Exclude parent script (flex.core.js)
-                                        return urls[urls.length - 1].indexOf(options.files.CORE_URL) === -1 ? urls[urls.length - 1] : null;
+                                        return detect_core ? urls[urls.length - 1] : (urls[urls.length - 1].indexOf(options.files.CORE_URL) === -1 ? urls[urls.length - 1] : null);
                                     }
                                 }
                             }
