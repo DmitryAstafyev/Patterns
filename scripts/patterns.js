@@ -1338,11 +1338,11 @@
                                 if (hook_value instanceof settings.classes.RESULT) {
                                     map['__' + hook_name + '__']    = hook_value.url;
                                     map[hook_name]                  = hook_value.hooks_map();
-                                } else if (typeof hook_value === 'object') {
+                                } else if (typeof hook_value === 'object' && hook_value !== null) {
                                     map[hook_name] = {};
                                     map[hook_name] = cloning.update(hook_value, map[hook_name]['__conditions__'], map[hook_name],
                                         predefined !== null ? (predefined[hook_name] !== void 0 ? predefined[hook_name].hooks : null) : null);
-                                } else {
+                                } else if (hook_value !== null) {
                                     map[hook_name] = true;
                                 }
                             } else {
@@ -1360,7 +1360,7 @@
                                     if (hook_value.hooks !== void 0) {
                                         map[hook_name] = cloning.update(map[hook_name], null, null, hook_value.hooks);
                                     }
-                                } else if (map['__' + hook_name + '__'] !== void 0 && typeof hook_value === 'object' && hook_value.url !== void 0) {
+                                } else if (map['__' + hook_name + '__'] !== void 0 && typeof hook_value === 'object' && hook_value.url !== void 0 && hook_value.hooks !== void 0) {
                                     map[hook_name] = cloning.update(map[hook_name], null, null, hook_value.hooks);
                                 }
                             });
@@ -2144,11 +2144,41 @@
                         return _instance;
                     },
                     handle      : function (handle, _instance, _resources) {
+                        function addHandles(res, key) {
+                            var _key = '';
+                            _key = key.replace(/_/gi, '');
+                            if (res[key] instanceof types.ExArray && res[_key + 'Add'] === void 0 && res[_key + 'Remove'] === void 0) {
+                                res['' + _key + 'Add'] = (function (dest) {
+                                    return function () {
+                                        var index = arguments[0] !== void 0 ? arguments[0] : dest.length,
+                                            values = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1, arguments.length) : null;
+                                        if (values !== null) {
+                                            dest.splice(index, 0, values);
+                                            return true;
+                                        }
+                                        return false;
+                                    };
+                                }(res[key]));
+                                res[_key + 'Remove'] = (function (dest) {
+                                    return function () {
+                                        var index = arguments[0] !== void 0 ? arguments[0] : 0,
+                                            count = arguments[1] !== void 0 ? arguments[1] : 1;
+                                        dest.splice(index, count);
+                                        return true;
+                                    };
+                                }(res[key]));
+                                res[_key + 'Length'] = (function (dest) {
+                                    return function () {
+                                        return dest.length;
+                                    };
+                                }(res[key]));
+                            }
+                        };
                         function collapse(res) {
                             function procced(res) {
                                 if (res instanceof Array || res instanceof types.ExArray) {
                                     res.forEach(function (val, index) {
-                                        res[index] = procced(val);
+                                        res[index] = procced(val, null);
                                     });
                                     return res.length === 1 ? res[0] : res;
                                 } else if (typeof res === 'object') {
@@ -2156,12 +2186,13 @@
                                         if (key.indexOf('__') !== -1) {
                                             if (value instanceof Array || value instanceof types.ExArray) {
                                                 value.forEach(function (val, index) {
-                                                    res[key][index] = procced(val);
+                                                    res[key][index] = procced(val, null);
                                                 });
                                                 res[key] = value.length === 1 ? value[0] : value;
                                             } else if (typeof value === 'object') {
-                                                res[key] = procced(value);
+                                                res[key] = procced(value, null);
                                             }
+                                            addHandles(res, key);
                                         }
                                     });
                                     return res;
@@ -2717,7 +2748,7 @@
                     }
                 };
                 hooks       = {
-                    values  : {
+                    values      : {
                         caller  : function (value) {
                             var _instance   = instance.init(value.url),
                                 _hooks      = value.hooks(),
@@ -2738,9 +2769,15 @@
                             }
                         }
                     },
-                    value   : function (something) {
+                    value       : function (something, hook_name) {
                         function getValue(something) {
+                            var p = privates;
                             if (something instanceof settings.classes.CALLER) {
+                                if (privates.map !== null){
+                                    if (privates.map[hook_name] !== void 0 && privates.map[hook_name].hooks !== void 0) {
+                                        something.updateMap(privates.map[hook_name].hooks);
+                                    }
+                                }
                                 return hooks.values.caller(something);
                             }
                             if (typeof something === 'function') {
@@ -2753,7 +2790,7 @@
                         }
                         return '';
                     },
-                    apply   : function (_hooks) {
+                    apply       : function (_hooks) {
                         var _hooks = _hooks !== void 0 ? _hooks : privates.hooks;
                         if (_hooks instanceof Array) {
                             _hooks.forEach(function (_, index) {
@@ -2761,12 +2798,12 @@
                             });
                         } else if (typeof _hooks === 'object' && _hooks !== null) {
                             _object(_hooks).forEach(function (hook_name, hook_value) {
-                                _hooks[hook_name] = hooks.value(hook_value);
+                                _hooks[hook_name] = hooks.value(hook_value, hook_name);
                             });
                         }
                         return _hooks;
                     },
-                    defaults: function () {
+                    defaults    : function () {
                         function process(source, destination) {
                             _object(source).forEach(function (hook_name, hook_value) {
                                 if (destination[hook_name] === void 0) {
@@ -2783,6 +2820,41 @@
                             process(defaults, privates.hooks);
                         }
                         return true;
+                    },
+                    updateMap   : function (map) {
+                        function defineHook(map, hook_name, hooks) {
+                            if (hooks[hook_name] !== void 0 && !(hooks[hook_name] instanceof settings.classes.CALLER)) {
+                                return caller.instance({
+                                    url     : map.url,
+                                    hooks   : hooks[hook_name]
+                                });
+                            } else {
+                                return false;
+                            }
+                        };
+                        var BREAK_ERROR = 'break';
+                        privates.map = Object.keys(privates.map).length === 0 ? map : privates.map;
+                        _object(privates.map).forEach(function (hook_name, map) {
+                            var update_hook = null;
+                            if (privates.hooks !== null) {
+                                if (privates.hooks instanceof Array) {
+                                    try{
+                                        privates.hooks.forEach(function (_hooks, index) {
+                                            update_hook                         = defineHook(map, hook_name, _hooks);
+                                            privates.hooks[index][hook_name]    = update_hook !== false ? update_hook : privates.hooks[index][hook_name];
+                                            if (update_hook === false) {
+                                                throw new Error(BREAK_ERROR);
+                                            }
+                                        });
+                                    } catch (e) {
+                                        if (e.message !== BREAK_ERROR) { throw e; }
+                                    }
+                                } else {
+                                    update_hook                 = defineHook(map, hook_name, privates.hooks);
+                                    privates.hooks[hook_name]   = update_hook !== false ? update_hook : privates.hooks[hook_name];
+                                }
+                            }
+                        });
                     }
                 };
                 render      = function (clone) {
@@ -2879,6 +2951,7 @@
                     conditions  : function () { return privates.conditions; },
                     component   : function () { return privates.component;  },
                     map         : function () { return privates.map;        },
+                    updateMap   : hooks.updateMap
                 };
                 return {
                     render      : returning.render,
@@ -2887,6 +2960,7 @@
                     resources   : returning.resources,
                     component   : returning.component,
                     map         : returning.map,
+                    updateMap   : returning.updateMap
                 };
             },
             instance: function (parameters) {
@@ -2926,8 +3000,6 @@
                         parent          : settings.classes.CALLER,
                         constr          : function () {
                             this.url = flex.system.url.restore(parameters.url);
-                            //Uncomment to check structure of component
-                            //this._hooks = parameters.hooks;
                         },
                         privates        : {
                             //From parameters

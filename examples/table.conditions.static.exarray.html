@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="../scripts/patterns.js"></script>
+    <script type="text/javascript" src="../scripts/patterns.min.js"></script>
 </head>
 <body>
     <a data-style="Button" id="add_row">Add new row</a>
@@ -29,8 +29,8 @@
                 callbacks: {
                     success: function (collapsed, uncollapsed) {
                         function add(event, indexes) {
-                            var index = indexes !== void 0 ? indexes[0] : rows.length - 1;
-                            rows.splice(index + 1, 0, {
+                            var index = indexes !== void 0 ? indexes[0] : model.rowsLength() - 1;
+                            model.rowsAdd(index + 1, {
                                 column_0: (Math.random() * 1000).toFixed(4),
                                 column_1: (Math.random() * 1000).toFixed(4),
                                 column_2: (Math.random() * 1000).toFixed(4),
@@ -42,11 +42,11 @@
                             uncollapsed.dom.listed[0].__rows__[index + 1].remove.on('click', remove);
                         };
                         function remove(event, indexes) {
-                            rows.splice(indexes[0], 1);
+                            model.rowsRemove(indexes[0]);
                             uncollapsed.map.update();
                             uncollapsed.dom.update();
                         };
-                        var rows = uncollapsed.model[0].__rows__;
+                        var model = uncollapsed.model[0];
                         _node('a[id="add_row"]').events().add('click', add);
                     }
                 }
