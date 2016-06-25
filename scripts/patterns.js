@@ -35,7 +35,8 @@
             helpers         = null,
             conditions      = null,
             callers         = null,
-            defaultshooks   = null;
+            defaultshooks   = null,
+            defaultsmap     = null;
         //Config
         config          = {
             values      : {
@@ -134,6 +135,7 @@
                 CONTROLLERS_STORAGE     : 'FLEX_PATTERNS_CONTROLLERS_STORAGE',
                 CONDITIONS_STORAGE      : 'FLEX_PATTERNS_CONDITIONS_STORAGE',
                 HOOKS_STORAGE           : 'FLEX_PATTERNS_HOOKS_STORAGE',
+                MAPS_STORAGE            : 'FLEX_PATTERNS_MAPS_STORAGE',
                 PATTERN_SOURCES         : 'FLEX_PATTERNS_PATTERN_SOURCES',
                 PATTERNS                : 'FLEX_PATTERNS_PATTERNS',
             },
@@ -2855,73 +2857,106 @@
                                 }
                             }
                         });
+                    },
+                    defaultMap  : function () {
+                        var defaults = defaultsmap.storage.get(self.url);
+                        if (defaults !== null && typeof defaults === 'object') {
+                            privates.map = Object.keys(privates.map).length === 0 ? defaults : privates.map;
+                        }
                     }
                 };
                 render      = function (clone) {
+                    function getPredefinedMap(map, list) {
+                        if (typeof map === 'object') {
+                            _object(map).forEach(function (key, value) {
+                                var url = null;
+                                if (value.url !== void 0) {
+                                    url = flex.system.url.restore(value.url);
+                                    if (list.indexOf(url) === -1) {
+                                        list.push(url);
+                                    }
+                                    if (value.hooks !== void 0) {
+                                        getPredefinedMap(value.hooks, list);
+                                    }
+                                }
+                            });
+                        }
+                    };
+                    function checkMap(sources, success, fail) {
+                        var list        = [],
+                            unloaded    = [];
+                        hooks.defaultMap();
+                        if (typeof privates.map === 'object') {
+                            getPredefinedMap(privates.map, list);
+                            list.forEach(function (url) {
+                                if (instance.init(url) === null) {
+                                    unloaded.push(url);
+                                }
+                            });
+                        }
+                        if (unloaded.length > 0) {
+                            source.init(unloaded, 
+                                function (_sources) {
+                                    success(sources.concat(_sources));
+                                },
+                                fail
+                            );
+                        } else {
+                            success(sources);
+                        }
+                    };
+                    function onSuccess(sources) {
+                        var _component = null;
+                        hooks.defaults();
+                        _component = sources.length === 1 ? component.process(sources[0].html()) : null;
+                        if (_component !== null) {
+                            _component.render(false, self.url);
+                        } else {
+                            hooks.apply();
+                            privates.pattern = instance.init(self.url);
+                            if (privates.pattern !== null) {
+                                privates.pattern = privates.pattern.build({
+                                    hooks       : privates.hooks,
+                                    resources   : privates.resources,
+                                    conditions  : privates.conditions,
+                                    component   : privates.component,
+                                    map         : privates.map,
+                                });
+                                if (privates.pattern instanceof settings.classes.RESULT) {
+                                    privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
+                                    if (privates.callbacks.success !== null) {
+                                        privates.pattern.handle()(privates.callbacks.success, privates.resources);
+                                    }
+                                }
+                            } else {
+                                flex.logs.log(signature() + logs.caller.CANNOT_GET_PATTERN, flex.logs.types.CRITICAL);
+                                flex.system.handle(privates.callbacks.fail, self.url);
+                                throw logs.caller.CANNOT_GET_PATTERN;
+                            }
+                        }
+                    };
+                    function onFail() {
+                        flex.logs.log(signature() + logs.caller.CANNOT_INIT_PATTERN, flex.logs.types.CRITICAL);
+                        flex.system.handle(privates.callbacks.fail, self.url);
+                        throw logs.caller.CANNOT_INIT_PATTERN;
+                    };
                     var clone = typeof clone === 'boolean' ? clone : false;
                     if (!clone) {
                         patterns.reset();
                         patterns.find(privates.hooks);
                         source.init(
                             (function () {
-                                function getPredefined(map) {
-                                    if (typeof map === 'object') {
-                                        _object(map).forEach(function (key, value) {
-                                            var url = null;
-                                            if (value.url !== void 0) {
-                                                url = flex.system.url.restore(value.url);
-                                                if (list.indexOf(url) === -1) {
-                                                    list.push(url);
-                                                }
-                                                if (value.hooks !== void 0) {
-                                                    getPredefined(value.hooks);
-                                                }
-                                            }
-                                        });
-                                    }
-                                };
-                                var list = [];
+                                var list =   [];
                                 _object(privates.patterns).forEach(function (url) {
                                     list.push(url);
                                 });
-                                getPredefined(privates.map);
+                                getPredefinedMap(privates.map, list);
                                 return list;
                             }()),
                             function (sources) {
-                                var _component = null;
-                                hooks.defaults();
-                                _component = sources.length === 1 ? component.process(sources[0].html()) : null;
-                                if (_component !== null) {
-                                    _component.render(false, self.url);
-                                } else {
-                                    hooks.apply();
-                                    privates.pattern = instance.init(self.url);
-                                    if (privates.pattern !== null) {
-                                        privates.pattern = privates.pattern.build({
-                                            hooks       : privates.hooks,
-                                            resources   : privates.resources,
-                                            conditions  : privates.conditions,
-                                            component   : privates.component,
-                                            map         : privates.map,
-                                        });
-                                        if (privates.pattern instanceof settings.classes.RESULT) {
-                                            privates.pattern.mount(privates.node, privates.before, privates.after, privates.replace);
-                                            if (privates.callbacks.success !== null) {
-                                                privates.pattern.handle()(privates.callbacks.success, privates.resources);
-                                            }
-                                        }
-                                    } else {
-                                        flex.logs.log(signature() + logs.caller.CANNOT_GET_PATTERN, flex.logs.types.CRITICAL);
-                                        flex.system.handle(privates.callbacks.fail, self.url);
-                                        throw logs.caller.CANNOT_GET_PATTERN;
-                                    }
-                                }
+                                checkMap(sources, onSuccess, onFail);
                             },
-                            function () {
-                                flex.logs.log(signature() + logs.caller.CANNOT_INIT_PATTERN, flex.logs.types.CRITICAL);
-                                flex.system.handle(privates.callbacks.fail, self.url);
-                                throw logs.caller.CANNOT_INIT_PATTERN;
-                            }
+                            onFail
                         );
                     } else {
                         hooks.apply();
@@ -3321,6 +3356,29 @@
                 }
             }
         };
+        defaultsmap     = {
+            storage : {
+                add: function (pattern_url, _hooks) {
+                    var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.MAPS_STORAGE, {});
+                    storage[pattern_url] = _hooks;
+                },
+                get : function (pattern_url) {
+                    var storage = flex.overhead.globaly.get(settings.storage.VIRTUAL_STORAGE_GROUP, settings.storage.MAPS_STORAGE, {});
+                    return storage[pattern_url] !== void 0 ? storage[pattern_url] : null;
+                },
+            },
+            attach  : function (_map) {
+                var url     = null,
+                    _source = null;
+                if (typeof _map === 'object' && _map !== null) {
+                    url = controllers.current.get() !== null ? controllers.current.get() : flex.resources.attach.js.getCurrentSRC();
+                    if (url !== null) {
+                        _source = controllers.references.getPatternURL(url);
+                        defaultsmap.storage.add(_source, _map);
+                    }
+                }
+            }
+        };
         helpers         = {
             testReg     : function(reg, str){
                 reg.lastIndex = 0;
@@ -3455,7 +3513,10 @@
                 attach  : conditions.attach
             },
             hooks       : {
-                attach: defaultshooks.attach
+                attach  : defaultshooks.attach
+            },
+            map         : {
+                attach  : defaultsmap.attach
             },
             classes     : {
                 NODE_LIST: {
@@ -3471,6 +3532,7 @@
         window['_controller'] = privates.controller.attach;
         window['_conditions'] = privates.conditions.attach;
         window['_hooks'     ] = privates.hooks.attach;
+        window['_map'       ] = privates.map.attach;
         //Run layout parser
         layout.attach();
         //Public part
