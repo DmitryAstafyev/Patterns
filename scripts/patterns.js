@@ -183,7 +183,8 @@
             },
             other           : {
                 INDEXES         : '__indexes',
-                CONDITION_ATTR  : 'data-flex-patterns-condition'
+                CONDITION_ATTR  : 'data-flex-patterns-condition',
+                HOOK_ATTR       : 'data-flex-pattern-hook-in-attr'
             }
         };
         logs            = {
@@ -603,14 +604,14 @@
                                             if (helpers.testReg(settings.regs.HOOK, attr.value)) {
                                                 hooks = attr.value.match(settings.regs.HOOK);
                                                 hooks = hooks.map(function (name) { return name.replace(settings.regs.HOOK_BORDERS, ''); });
-                                                if (!node.hasAttribute('data-flex-pattern-hook-in-attr')) {
+                                                if (!node.hasAttribute(settings.other.HOOK_ATTR)) {
                                                     obj[attr.name] = hooks;
-                                                    node.setAttribute('data-flex-pattern-hook-in-attr', JSON.stringify(obj));
+                                                    node.setAttribute(settings.other.HOOK_ATTR, JSON.stringify(obj));
                                                 } else {
-                                                    obj             = JSON.parse(node.getAttribute('data-flex-pattern-hook-in-attr'));
+                                                    obj             = JSON.parse(node.getAttribute(settings.other.HOOK_ATTR));
                                                     obj[attr.name]  = obj[attr.name] === void 0 ? [] : obj[attr.name];
                                                     obj[attr.name]  = obj[attr.name].concat(hooks);
-                                                    node.setAttribute('data-flex-pattern-hook-in-attr', JSON.stringify(obj));
+                                                    node.setAttribute(settings.other.HOOK_ATTR, JSON.stringify(obj));
                                                 }
                                             }
                                         }
@@ -691,7 +692,7 @@
                                 return _nodes('*[class="' + settings.css.classes.HOOK_WRAPPER + '"]', false, node).target;
                             },
                             getAllInAttrs   : function (node) {
-                                return _nodes('*[data-flex-pattern-hook-in-attr]', false, node).target;
+                                return _nodes('*[' + settings.other.HOOK_ATTR + ']', false, node).target;
                             },
                             inNodes         : function (nodes, hooks, storage) {
                                 if (nodes !== null) {
@@ -712,7 +713,7 @@
                             inAttributes    : function (nodes, hook, storage) {
                                 if (nodes !== null) {
                                     Array.prototype.forEach.call(nodes, function (node) {
-                                        var data = JSON.parse(node.getAttribute('data-flex-pattern-hook-in-attr'));
+                                        var data = JSON.parse(node.getAttribute(settings.other.HOOK_ATTR));
                                         _object(data).forEach(function (attr_name, hooks) {
                                             var attr_value = node.getAttribute(attr_name);
                                             hooks.forEach(function (hook_name) {

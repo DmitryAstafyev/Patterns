@@ -42,6 +42,7 @@
                                     c = Math.round(3 * Math.random());
                                 model.__rows__[r]['column_' + c] = (Math.random() * 1000).toFixed(4);
                                 model.__rows__[r]['background_' + c] = 'rgb(' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ')';
+                                model.__rows__[r]['color_' + c] = 'rgb(' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ', ' + Math.round(255 * Math.random()) + ')';
                                 setTimeout(fun, Math.ceil(50 * Math.random()));
                             };
                             fun();
